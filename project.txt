@@ -1,0 +1,23 @@
+! CONTEXT:
+	/protocol/
+		&<http://if.fault.io/project/information>
+
+/identifier/
+	&<http://fault.io/python/project>
+/name/
+	`project`
+/abstract/
+	Factored Products navigation and comprehension tools.
+
+	The storage protocols employed by Factored Products requires some
+	interpretation on the part of a system using conforming projects.
+	The modules and executables herein provide a toolset for Python
+	based factor processing tools.
+/icon/
+	- (emoji)`🚧`
+/versioning/
+	continuous
+/controller/
+	fault.io
+/contact/
+	&<http://fault.io/critical>

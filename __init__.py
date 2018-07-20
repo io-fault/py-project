@@ -1,0 +1,3 @@
+"""
+# Factored Product comprehension tools.
+"""
