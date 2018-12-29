@@ -3,6 +3,8 @@
 
 # [ Types ]
 
+# /IReference/
+	# Python &str qualifying an object for use as a reference to a Target.
 # /ISymbols/
 	# The effective contents of an (filename)`infrastructure.txt` factor.
 	# This is a mapping defining Infrastructure Symbols to abstract references.
@@ -20,6 +22,8 @@ from fault.routes import library as libroutes
 ignored = {
 	'__pycache__',
 	'__f_cache__',
+	'__f-cache__',
+	'__f-int__',
 	'.git',
 	'.svn',
 	'.hg',
@@ -70,3 +74,27 @@ IReference.__qualname__ = __name__ + '.IReference'
 ISymbols = typing.Mapping[(typing.Text,typing.Collection[IReference])]
 
 IDocumentation = typing.Mapping[(str,"'http://if.fault.io/text'")]
+
+from enum import Enum, unique
+
+@unique
+class Area(Enum):
+	"""
+	# The relative area that a factor exists within relative to another factor.
+
+	# Whenever a relationship is designated between two Factors, it
+	# is often reasonable to identify the locality so that decisions
+	# can be made about how resolution is performed.
+	"""
+
+	factor = 0
+	project = 1
+	category = 2
+	context = 3
+	product = 4
+	environment = 5
+	system = 6
+
+	# Primarily use to declare that a factor could not be found.
+	unavailable = 255
+del Enum, unique

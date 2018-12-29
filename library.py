@@ -170,6 +170,8 @@ def find(paths, factors:[libroutes.Segment]):
 
 		# Exact project factor or a enclosure.
 		fc = factorcontext(identify_filesystem_context(local))
+		if fc is None:
+			continue
 
 		if enclosure(fc):
 			assert not sources # sources should be none if it's an enclosure
@@ -219,7 +221,7 @@ def tree(path:libroutes.Route, segment):
 		# Contexts may contain categories, but categories should be final.
 		for i in range(len(projects)):
 			p = projects[i]
-			if enclosure(p[-1]):
+			if p[-1] is not None and enclosure(p[-1]):
 				projects.extend(_expand(p[-1].project))
 				projects[i] = (None, None) # Enclosures don't have project identifiers.
 	else:
@@ -275,26 +277,14 @@ def navigate(segment:libroutes.Segment, path:str):
 	else:
 		return current
 
-def resolve(filesystem:files.Path, path:libroutes.Segment, relative:str):
-	"""
-	# Resolve a relative factor path from a given &filesystem and
-	# absolute factor &path.
-	"""
-	rid = navigate(path, relative)
-	fileset = navigate(filesystem, rid)
-
-	if fileset:
-		return (rid, fileset[0])
-	return (rid, None)
-
-def sources(workspace:files.Path, factor:libroutes.Segment) -> typing.Collection[files.Path]:
+def sources(root:files.Path, factor:libroutes.Segment) -> typing.Collection[files.Path]:
 	"""
 	# Retrieve the set of &files.Path paths that may be
-	# the source for a factor relative to the given &workspace.
+	# the source for a factor relative to the given &root.
 	"""
 
 	*prefix, final = factor.absolute
-	container = workspace.extend(prefix)
+	container = root.extend(prefix)
 	if (container/final).is_directory():
 		# Directories must stand alone.
 		return [container/final]
@@ -308,11 +298,11 @@ def universal(fc:FactorContextPaths, project:libroutes.Segment, relative_path:st
 	"""
 
 	product_relative = navigate((project/'infrastructure'), relative_path)
-	file_route, *_ = sources(fc.context.container.container, product_relative) # Factor does not exist?
+	file_route, *_ = sources(fc.root, product_relative) # Factor does not exist?
 	target_fc = factorcontext(identify_filesystem_context(file_route))
 
 	paths = (target_fc.project >> file_route)[-1]
-	if '.' in paths[-1]:
+	if paths and '.' in paths[-1]:
 		# Purify factor path.
 		paths = list(paths)
 		paths[-1] = paths[-1].split('.', 1)[0]
@@ -355,6 +345,61 @@ def infrastructure(fc:FactorContextPaths) -> ISymbols:
 
 	return uinfra
 
+def integrals(project:libroutes.Route, factor:libroutes.Segment, directory='__f-int__'):
+	"""
+	# Retrieve the set of integrals produced by the &factor contained by &project.
+	# A segment path is used to identify the factor in order to emphasize that
+	# a direct file path should not be used.
+	"""
+	fs = project.extend(factor)
+
+	basename = factor.identifier
+	ints = fs.container / directory
+
+	return ints
+
+def compose(groups, variants, default='void'):
+	"""
+	# Create a variant path according to the given &groups and &variants.
+	"""
+	segments = []
+
+	for g in groups[:-1]:
+		fields = ([(variants.get(x) or default) for x in g])
+		segment = '-'.join(fields)
+		segments.append(segment)
+
+	# Name must be '.' separated.
+	fields = ([(variants.get(x) or default) for x in groups[-1]])
+	segment = '.'.join(fields)
+	segments.append(segment)
+
+	return segments
+
+def parse_integral_descriptor_1(string:str) -> typing.Iterator[typing.Sequence[str]]:
+	"""
+	# Given the data from a (system/filename)`fields.txt` file located inside
+	# a factor integral set directory, return an iterator producing sequences that
+	# detail the groupings used to designate the location of a variant.
+
+	# [ Parameters ]
+	# /string/
+		# The text format is newline separated records consisting of whitespace separated fields.
+		# Each line containing fields designates a directory level that will contain
+		# the variants expressed on subsequent lines. The final record designating the
+		# variants used to specify the integral file, often this should be "name".
+
+		# No escaping mechanism is provided as the fields are required to be identifiers.
+	"""
+
+	for line in map(str.strip, string.split('\n')):
+		if line[:1] in ('#', ''):
+			# Ignore comments and empty lines.
+			continue
+
+		# Strip the fields in each group ignoring empty fields.
+		yield [x for x in map(str.strip, line.split()) if x]
+
 class FactorSet(object):
 	"""
 	# Finite set of factors accessible using the Project Identifier for universal-to-local mappings.
@@ -372,18 +417,22 @@ class FactorSet(object):
 			if identifier not in v:
 				continue
 
-			path, i = v[identifier]
+			i = v[identifier]
 			route = k.__class__(k, tuple(i.split('.')))
 			fc = factorcontext(identify_filesystem_context(route))
 			info = information(fc)
 			infra = infrastructure(fc)
-			return Project(fc, info, infra)
+			return (fc, info, infra)
 
 		# No Project
 		return None
 
 if __name__ == '__main__':
 	import sys, pprint
-	name, factor, *paths = sys.argv
-	factor_path = libroutes.Segment(None, tuple(factor.split('.')))
-	pprint.pprint(find(map(files.Path.from_path, paths), [factor_path]))
+	root = files.Path.from_absolute(sys.argv[1])
+	variants = {
+		'architecture': 'x86_64',
+		'system': 'darwin',
+		'format': 'pic',
+	}
+	pprint.pprint(str(compose(root, [['system'],['architecture','format','python']], variants)))
