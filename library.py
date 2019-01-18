@@ -2,7 +2,7 @@
 # Project protocols and system query tools for comprehending stored project directories.
 
 # This module is a grab bag of tools for performing mappings to and from factor paths and
-# filesystem paths. When working with Factored Products, there are a number of positions
+# filesystem paths. When working with Factored Projects, there are a number of positions
 # within a filesystem tree that are useful to have in order to navigate a project using
 # a factor path.
 
@@ -20,6 +20,8 @@ try:
 	del dataclass
 except:
 	pass
+
+default_integral_segment = [["system", "architecture"], ["name"]]
 
 def variation(*priorities, **fields):
 	"""
@@ -42,7 +44,8 @@ def factorcontext(objects:tuple) -> FactorContextPaths:
 	# within an application.
 
 	# Common usage:
-	#!/pl/python
+
+	##!/pl/python
 		fc = factorcontext(identify_filesystem_context(route))
 	"""
 
@@ -351,14 +354,10 @@ def integrals(project:libroutes.Route, factor:libroutes.Segment, directory='__f-
 	# A segment path is used to identify the factor in order to emphasize that
 	# a direct file path should not be used.
 	"""
-	fs = project.extend(factor)
+	path = project.extend(factor)
+	return path * directory
 
-	basename = factor.identifier
-	ints = fs.container / directory
-
-	return ints
-
-def compose(groups, variants, default='void'):
+def compose_integral_path(variants, default='void', groups=default_integral_segment):
 	"""
 	# Create a variant path according to the given &groups and &variants.
 	"""
@@ -381,6 +380,8 @@ def parse_integral_descriptor_1(string:str) -> typing.Iterator[typing.Sequence[s
 	# Given the data from a (system/filename)`fields.txt` file located inside
 	# a factor integral set directory, return an iterator producing sequences that
 	# detail the groupings used to designate the location of a variant.
+
+	# Normally unused as the default groupings are encouraged.
 
 	# [ Parameters ]
 	# /string/
