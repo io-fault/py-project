@@ -253,8 +253,8 @@ def information(fc:FactorContextPaths) -> Information:
 
 	return Information(
 		info['identifier'],
-		info['icon'],
 		info['name'],
+		info['icon'],
 		info['abstract'],
 		info.get('versioning', 'unspecified'),
 		info['controller'],
