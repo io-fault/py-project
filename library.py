@@ -21,7 +21,8 @@ try:
 except:
 	pass
 
-default_integral_segment = [["system", "architecture"], ["name"]]
+prohibited_name_characters = ".\n\t /=*[]#:;,!`" + '"'
+default_integral_segment = [["system", "architecture"], ["name", "role"]]
 
 def variation(*priorities, **fields):
 	"""
