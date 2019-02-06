@@ -14,7 +14,7 @@
 	The modules and executables herein provide a toolset for Python
 	based factor processing tools.
 /icon/
-	- (emoji)`🚧`
+	- (emoji)`💡`
 /versioning/
 	continuous
 /controller/
