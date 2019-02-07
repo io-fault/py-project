@@ -22,7 +22,7 @@ except:
 	pass
 
 prohibited_name_characters = ".\n\t /=*[]#:;,!`" + '"'
-default_integral_segment = [["system", "architecture"], ["name", "role"]]
+default_integral_segment = [["system", "architecture"], ["name"]]
 
 def variation(*priorities, **fields):
 	"""
