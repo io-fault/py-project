@@ -3,7 +3,7 @@
 		&<http://if.fault.io/project/information>
 
 /identifier/
-	&<http://fault.io/python/project>
+	`http://fault.io/python/project`
 /name/
 	`project`
 /abstract/
@@ -15,8 +15,12 @@
 	based factor processing tools.
 /icon/
 	- (emoji)`💡`
+
 /versioning/
 	continuous
+/status/
+	volatile
+
 /controller/
 	fault.io
 /contact/
