@@ -3,7 +3,7 @@
 """
 import sys
 
-from ...routes import library as libroutes
+from ...routes import types as routes
 from ...system import process
 from ...system import files
 from .. import library
@@ -13,7 +13,7 @@ def main(inv:process.Invocation) -> process.Exit:
 	path = files.Path.from_path(path)
 
 	for leading in factors:
-		ls = libroutes.Segment.from_sequence(leading.split('.'))
+		ls = routes.Segment.from_sequence(leading.split('.'))
 		for fpath, fc in library.tree(path, ls):
 			info = library.information(fc)
 			pathstr = '.'.join(fpath.absolute)

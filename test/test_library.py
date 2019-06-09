@@ -1,7 +1,6 @@
 """
 # Test library module.
 """
-from ...routes import library as libroutes
 from ...system import files
 from .. import library
 

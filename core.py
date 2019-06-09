@@ -17,7 +17,7 @@
 import typing
 from dataclasses import dataclass
 
-from fault.routes import library as libroutes
+from fault.routes import types as routes
 
 ignored = {
 	'__pycache__',
@@ -49,10 +49,10 @@ class FactorContextPaths(object):
 	# /project/
 		# The filesystem route to the directory containing the project.
 	"""
-	root: (libroutes.Route) = None
-	context: (typing.Optional[libroutes.Route]) = None
-	category: (typing.Optional[libroutes.Route]) = None
-	project: (libroutes.Route) = None
+	root: (routes.Selector) = None
+	context: (typing.Optional[routes.Selector]) = None
+	category: (typing.Optional[routes.Selector]) = None
+	project: (routes.Selector) = None
 
 @dataclass
 class Information(object):

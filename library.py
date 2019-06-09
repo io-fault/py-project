@@ -12,7 +12,7 @@
 import typing
 import functools
 
-from ..routes import library as libroutes
+from ..routes import types as routes
 from ..system import files
 
 from .core import *
@@ -55,17 +55,17 @@ def factorcontext(objects:tuple) -> FactorContextPaths:
 
 	return FactorContextPaths(*objects)
 
-def factorsegment(path:str) -> libroutes.Segment:
+def factorsegment(path:str) -> routes.Segment:
 	"""
-	# Create a &libroutes.Segment using a "."-separated &path.
+	# Create a &routes.Segment using a "."-separated &path.
 	"""
-	return libroutes.Segment(None, tuple(path.split('.')))
+	return routes.Segment(None, tuple(path.split('.')))
 
-def projectfactor(fc:FactorContextPaths) -> libroutes.Segment:
+def projectfactor(fc:FactorContextPaths) -> routes.Segment:
 	"""
 	# Create a Segment referring to the Project Factor identified by &fc.
 	"""
-	return libroutes.Segment(None, tuple((fc.root >> fc.project)[1]))
+	return routes.Segment(None, tuple((fc.root >> fc.project)[1]))
 
 def enclosure(fc:FactorContextPaths) -> bool:
 	"""
@@ -88,7 +88,7 @@ def enclosure(fc:FactorContextPaths) -> bool:
 	# Neither category nor context.
 	return False
 
-def identify_filesystem_context(route:libroutes.Route) -> tuple:
+def identify_filesystem_context(route:routes.Selector) -> tuple:
 	"""
 	# Identify the Project, Context Project, and, optionally, the Category Project of the given route.
 
@@ -147,7 +147,7 @@ def identify_filesystem_context(route:libroutes.Route) -> tuple:
 	# No context.
 	return (enclosure.container, context, category, project)
 
-def find(paths, factors:[libroutes.Segment]):
+def find(paths, factors:[routes.Segment]):
 	"""
 	# Find the &factors in the &paths. Used to connect Factor paths to real files.
 	"""
@@ -209,7 +209,7 @@ def _expand(path):
 		if x.identifier not in ignored and '.' not in x.identifier
 	]
 
-def tree(path:libroutes.Route, segment):
+def tree(path:routes.Selector, segment):
 	"""
 	# Discover the projects in the tree identified by the &segment in &path.
 	# &path is normally a filesystem path and segment the relative path to
@@ -235,7 +235,7 @@ def tree(path:libroutes.Route, segment):
 		if fc is None:
 			continue
 
-		seg = libroutes.Segment.from_sequence((path >> fspath)[-1])
+		seg = routes.Segment.from_sequence((path >> fspath)[-1])
 		yield seg, fc
 
 def information(fc:FactorContextPaths) -> Information:
@@ -262,7 +262,7 @@ def information(fc:FactorContextPaths) -> Information:
 		info['contact'],
 	)
 
-def navigate(segment:libroutes.Segment, path:str):
+def navigate(segment:routes.Segment, path:str):
 	"""
 	# Select the factor relative to &segment using the given relative path.
 	# &path is a Factor Path String with optional leading (character)`.` designating
@@ -281,7 +281,7 @@ def navigate(segment:libroutes.Segment, path:str):
 	else:
 		return current
 
-def sources(root:files.Path, factor:libroutes.Segment) -> typing.Collection[files.Path]:
+def sources(root:files.Path, factor:routes.Segment) -> typing.Collection[files.Path]:
 	"""
 	# Retrieve the set of &files.Path paths that may be
 	# the source for a factor relative to the given &root.
@@ -296,7 +296,7 @@ def sources(root:files.Path, factor:libroutes.Segment) -> typing.Collection[file
 	final += '.'
 	return [x for x in container.subnodes()[1] if x.identifier.startswith(final)]
 
-def universal(fc:FactorContextPaths, project:libroutes.Segment, relative_path:str):
+def universal(fc:FactorContextPaths, project:routes.Segment, relative_path:str):
 	"""
 	# Identify the universal resource indicator of a relative factor path.
 	"""
@@ -334,7 +334,7 @@ def infrastructure(fc:FactorContextPaths) -> ISymbols:
 			ctx, content = struct.parse(x.get_text_content())
 			infra.update(content)
 
-	project_path = libroutes.Segment(None, (fc.root >> fc.project)[1])
+	project_path = routes.Segment(None, (fc.root >> fc.project)[1])
 
 	uinfra = {
 		k: v.__class__([
@@ -349,7 +349,7 @@ def infrastructure(fc:FactorContextPaths) -> ISymbols:
 
 	return uinfra
 
-def integrals(project:libroutes.Route, factor:libroutes.Segment, directory='__f-int__'):
+def integrals(project:routes.Selector, factor:routes.Segment, directory='__f-int__'):
 	"""
 	# Retrieve the set of integrals produced by the &factor contained by &project.
 	# A segment path is used to identify the factor in order to emphasize that
