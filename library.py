@@ -46,7 +46,7 @@ def factorcontext(objects:tuple) -> FactorContextPaths:
 
 	# Common usage:
 
-	##!/pl/python
+	#!/pl/python
 		fc = factorcontext(identify_filesystem_context(route))
 	"""
 
@@ -242,7 +242,7 @@ def information(fc:FactorContextPaths) -> Information:
 	"""
 	# Retrieve the information record of the project.
 	"""
-	from fault.text import struct
+	from . import struct
 
 	if enclosure(fc):
 		project = (fc.category or fc.context)
@@ -320,7 +320,7 @@ def infrastructure(fc:FactorContextPaths) -> ISymbols:
 	"""
 	# Extract and interpret infrastructure symbols used to expresss abstract requirements.
 	"""
-	from fault.text import struct, library as libtext
+	from . import struct
 
 	infra = {}
 	i_sources = [
@@ -344,7 +344,7 @@ def infrastructure(fc:FactorContextPaths) -> ISymbols:
 			for t in v
 		])
 		for k, v in infra.items()
-		if not isinstance(v, libtext.Paragraph)
+		if not isinstance(v, struct.libtext.Paragraph)
 	}
 
 	return uinfra

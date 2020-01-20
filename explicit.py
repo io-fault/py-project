@@ -1,5 +1,5 @@
 """
-# Project directory protocol for explicit factor specifications.
+# Project Directory Protocol for explicit factor specifications.
 
 # Explicitly Typed Factors is a project factor protocol designed for projects
 # that primarily consist of factors that are composed of single source files.
@@ -14,7 +14,7 @@
 import collections
 
 from . import core
-from ..text import struct
+from . import struct
 
 def isource(route):
 	"""
