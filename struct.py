@@ -6,7 +6,7 @@
 import typing
 
 from ..text import document
-from ..text import library as libtext
+from ..text import format
 
 def _project_interpret(obj):
 	t = obj[0]
@@ -135,9 +135,19 @@ protocol = {
 	"http://if.fault.io/project/factor": factor
 }
 
+def _parse(source,
+		Parser=format.Parser,
+		Transform=document.Transform,
+		dt=document.Tree()
+	):
+	dx = Transform(dt)
+	fp = Parser()
+	g = dx.process(fp.parse(source))
+	return list(g)
+
 def parse(text:str) -> typing.Tuple[object, object]:
 	try:
-		tree = list(libtext.parse(text))
+		tree = list(_parse(text))
 		context, main = _context_data(tree[0][1])
 		proto = context['protocol'][0][-1] # FORMAT: /protocol/ not found in CONTEXT admonition.
 		si = protocol[proto] # FORMAT: protocol not supported by fault.text.struct
