@@ -344,7 +344,7 @@ def infrastructure(fc:FactorContextPaths) -> ISymbols:
 			for t in v
 		])
 		for k, v in infra.items()
-		if not isinstance(v, struct.document.core.Paragraph)
+		if not isinstance(v, struct.document.types.Paragraph)
 	}
 
 	return uinfra
