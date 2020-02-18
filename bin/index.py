@@ -3,7 +3,7 @@
 """
 import sys
 
-from ...routes import types as routes
+from ... import routes
 from ...system import process
 from ...system import files
 from .. import library

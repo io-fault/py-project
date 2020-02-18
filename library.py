@@ -12,7 +12,7 @@
 import typing
 import functools
 
-from ..routes import types as routes
+from .. import routes
 from ..system import files
 
 from .core import *
@@ -20,6 +20,7 @@ try:
 	del dataclass
 except:
 	pass
+from . import explicit
 
 prohibited_name_characters = ".\n\t /=*[]#:;,!`" + '"'
 default_integral_segment = [["system", "architecture"], ["name"]]
@@ -59,95 +60,57 @@ def factorsegment(path:str) -> routes.Segment:
 	"""
 	# Create a &routes.Segment using a "."-separated &path.
 	"""
-	return routes.Segment(None, tuple(path.split('.')))
+	return routes.Segment.from_sequence(path.split('.'))
 
 def projectfactor(fc:FactorContextPaths) -> routes.Segment:
 	"""
 	# Create a Segment referring to the Project Factor identified by &fc.
 	"""
-	return routes.Segment(None, tuple((fc.root >> fc.project)[1]))
-
-def enclosure(fc:FactorContextPaths) -> bool:
-	"""
-	# Whether the given &fc refers to an enclosure.
-
-	# When &identify_filesystem_context is given a path to an enclosure, it is not
-	# appropriate for it to select an actual project factor as it would introduce
-	# ambiguity. So if the &FactorContextPaths.project refers to the container of
-	# the category or context projects, it is identified as an enclosure reference
-	# that should often be expanded into a set of projects.
-	"""
-
-	if fc.category is not None:
-		if fc.category.container == fc.project:
-			return True
-	if fc.context is not None:
-		if fc.context.container == fc.project:
-			return True
-
-	# Neither category nor context.
-	return False
+	return fc.project.segment(fc.root)
 
 def identify_filesystem_context(route:routes.Selector) -> tuple:
 	"""
-	# Identify the Project, Context Project, and, optionally, the Category Project of the given route.
+	# Identify the context paths of a file system route.
 
 	# Resulting tuple should be given to &factorcontext to create a &FactorContextPaths instance.
 	"""
 
 	current = route
 	if current.is_regular_file():
-		current = current.container
-	current = current.real()
+		current **= 1
 
-	context = None
-	category = None
-
-	if not (current/'project.txt').exists():
-		if (current/'context').is_directory() and (current/'context'/'project.txt').exists():
-			# Referred to the context enclosure.
-			return (current.container, current/'context', None, current)
-		elif (current/'category').is_directory() and (current/'category'/'project.txt').exists():
-			# Referred to the category enclosure.
-			category = current/'category'
-			project = current
-
-			while current.absolute:
-				current = current.container
-				if (current/'context').is_directory() and (current/'context'/'project.txt').exists():
-					return (current.container, current, category, project)
-			else:
-				return None
-		else:
-			# When current reaches root, it should throw the exception.
-			while current.absolute:
-				current = current.container
-				if (current/'project.txt').exists():
-					project = current
-					break
-			else:
-				return None
+	while not (current//explicit.ProjectSignal).is_regular_file():
+		current **= 1
+		if current.absolute == ():
+			# Hit root directory; no project.txt signals.
+			project = None
+			current = route
+			break
 	else:
+		# Found project directory.
 		project = current
+		current = project.container
 
-	enclosure = project
+	# Build context segment; path from product to project.
+	ctx = []
+	while (current//explicit.ContextSignal).is_regular_file():
+		if current.absolute == ():
+			if project is None:
+				raise ProtocolViolation("no product directory in route ancestry")
+			root = project.container
+			break
 
-	cat = project * 'category'
-	if cat.is_directory():
-		category = cat
-		ctx = project.container * 'context'
+		ctx.append(current.identifier)
+		current **= 1
 	else:
-		ctx = project * 'context'
+		# Product directory, maybe.
+		root = current
 
-	if ctx.is_directory():
-		if (ctx/'project.txt').exists():
-			context = ctx
-			enclosure = ctx.container
+	ctx.reverse()
+	context = routes.Segment.from_sequence(ctx)
+	return (root, context, project)
 
-	# No context.
-	return (enclosure.container, context, category, project)
-
-def find(paths, factors:[routes.Segment]):
+def find(paths, factors:typing.Sequence[routes.Segment]):
 	"""
 	# Find the &factors in the &paths. Used to connect Factor paths to real files.
 	"""
@@ -158,7 +121,7 @@ def find(paths, factors:[routes.Segment]):
 		sources = None
 
 		for path in paths:
-			local = path.extend(fpath.absolute)
+			local = path//fpath
 			if local.exists():
 				# factor exists as directory.
 				break
@@ -177,7 +140,7 @@ def find(paths, factors:[routes.Segment]):
 		if fc is None:
 			continue
 
-		if enclosure(fc):
+		if fc.enclosure:
 			assert not sources # sources should be none if it's an enclosure
 
 			# Expand enclosures.
@@ -197,9 +160,6 @@ def _expand(path):
 	"""
 	# Expand an enclosure into the projects that it contains.
 
-	# If the enclosure is a Context Project enclosure, the results may contain
-	# a category enclosure that may need further expansion.
-
 	# Normally, it is preferrable to use &tree.
 	"""
 
@@ -216,17 +176,18 @@ def tree(path:routes.Selector, segment):
 	# the Context Project or Category Project.
 	"""
 
-	absolute = path.extend(segment)
+	absolute = path//segment
 	fc = factorcontext(identify_filesystem_context(absolute))
 
-	if enclosure(fc):
-		projects = _expand(fc.project)
+	if fc.enclosure:
+		projects = _expand(fc.root//fc.context)
 
-		# Contexts may contain categories, but categories should be final.
 		for i in range(len(projects)):
 			p = projects[i]
-			if p[-1] is not None and enclosure(p[-1]):
-				projects.extend(_expand(p[-1].project))
+			ifc = p[-1]
+			if ifc is not None and ifc.enclosure:
+				enclosure = ifc.root // ifc.context
+				projects.extend(_expand(enclosure))
 				projects[i] = (None, None) # Enclosures don't have project identifiers.
 	else:
 		projects = [(fc.project, fc)]
@@ -235,7 +196,7 @@ def tree(path:routes.Selector, segment):
 		if fc is None:
 			continue
 
-		seg = routes.Segment.from_sequence((path >> fspath)[-1])
+		seg = fspath.segment(path)
 		yield seg, fc
 
 def information(fc:FactorContextPaths) -> Information:
@@ -244,8 +205,8 @@ def information(fc:FactorContextPaths) -> Information:
 	"""
 	from . import struct
 
-	if enclosure(fc):
-		project = (fc.category or fc.context)
+	if fc.enclosure:
+		project = fc.root + fc.context
 	else:
 		project = fc.project
 
@@ -257,7 +218,6 @@ def information(fc:FactorContextPaths) -> Information:
 		info['name'],
 		info.get('icon', {}),
 		info['abstract'],
-		info.get('versioning', 'unspecified'),
 		info['controller'],
 		info['contact'],
 	)
@@ -287,8 +247,8 @@ def sources(root:files.Path, factor:routes.Segment) -> typing.Collection[files.P
 	# the source for a factor relative to the given &root.
 	"""
 
-	*prefix, final = factor.absolute
-	container = root.extend(prefix)
+	final = factor.identifier
+	container = root//factor.container
 	if (container/final).is_directory():
 		# Directories must stand alone.
 		return [container/final]
@@ -305,7 +265,7 @@ def universal(fc:FactorContextPaths, project:routes.Segment, relative_path:str):
 	file_route, *_ = sources(fc.root, product_relative) # Factor does not exist?
 	target_fc = factorcontext(identify_filesystem_context(file_route))
 
-	paths = (target_fc.project >> file_route)[-1]
+	paths = file_route.segment(target_fc.project)
 	if paths and '.' in paths[-1]:
 		# Purify factor path.
 		paths = list(paths)
@@ -316,7 +276,7 @@ def universal(fc:FactorContextPaths, project:routes.Segment, relative_path:str):
 
 	return upath
 
-def infrastructure(fc:FactorContextPaths) -> ISymbols:
+def infrastructure(fc:FactorContextPaths, filename="infrastructure.txt") -> ISymbols:
 	"""
 	# Extract and interpret infrastructure symbols used to expresss abstract requirements.
 	"""
@@ -324,17 +284,19 @@ def infrastructure(fc:FactorContextPaths) -> ISymbols:
 
 	infra = {}
 	i_sources = [
-		(x/'infrastructure.txt')
-		for x in (fc.context, fc.category, fc.project)
+		(x/'context'/filename)
+		for x in (fc.root@fc.context)
 		if x is not None
 	]
+
+	i_sources.append(fc.project/filename)
 
 	for x in i_sources:
 		if x.exists():
 			ctx, content = struct.parse(x.get_text_content())
 			infra.update(content)
 
-	project_path = routes.Segment(None, (fc.root >> fc.project)[1])
+	project_path = fc.project.segment(fc.root)
 
 	uinfra = {
 		k: v.__class__([
@@ -355,7 +317,7 @@ def integrals(project:routes.Selector, factor:routes.Segment, directory='__f-int
 	# A segment path is used to identify the factor in order to emphasize that
 	# a direct file path should not be used.
 	"""
-	path = project.extend(factor)
+	path = project//factor
 	return path * directory
 
 def compose_integral_path(variants, default='void', groups=default_integral_segment):

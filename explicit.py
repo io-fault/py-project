@@ -13,8 +13,20 @@
 """
 import collections
 
+from .. import routes
+
 from . import core
 from . import struct
+
+ProjectSignal = routes.Segment.from_sequence(['project.txt'])
+ContextSignal = routes.Segment.from_sequence(['context', 'project.txt'])
+SourceSignal = routes.Segment.from_sequence(['src'])
+FactorDefinitionSignal = routes.Segment.from_sequence(['factor.txt'])
+
+class ProtocolViolation(Exception):
+	"""
+	# The route was identified as not conforming to the protocol.
+	"""
 
 def isource(route):
 	"""
@@ -50,16 +62,18 @@ def query(route, ignore=core.ignored):
 		r, path = cur.popleft()
 		assert r.identifier not in ignore # cache or integration directory
 
-		if (r/'src').exists() and (r/'factor.txt').exists():
+		srcdir = r//SourceSignal
+		spec = r//FactorDefinitionSignal
+
+		if srcdir.exists() and spec.exists():
 			whole[path] = ('factor', 'directory', {}, r.files())
 
-			src = (r/'src')
-			spec = (r/'factor.txt')
 			spec_ctx, data = struct.parse(spec.get_text_content())
 
-			sources = src.tree()[1] # Only interested in regular files.
-			sources = [src.__class__(src, (src>>x)[1]) for x in sources]
-			composites[path] = (data['domain'], data['type'], data.get('symbols', set()), sources)
+			srcdir = srcdir.delimit()
+			sources = srcdir.tree()[1] # Only interested in regular files.
+			cpath = routes.Segment.from_sequence(path)
+			composites[cpath] = (data['domain'], data['type'], data.get('symbols', set()), sources)
 		else:
 			dirs, files = r.subnodes()
 			whole[path] = (

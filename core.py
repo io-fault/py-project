@@ -17,7 +17,7 @@
 import typing
 from dataclasses import dataclass
 
-from fault.routes import types as routes
+from fault import routes
 
 ignored = {
 	'__pycache__',
@@ -44,15 +44,24 @@ class FactorContextPaths(object):
 	# /context/
 		# The context project relevant to &project.
 		# &None if the project is not managed within a Project Context.
-	# /category/
-		# The category project declaring the protocol of the factor's project.
 	# /project/
-		# The filesystem route to the directory containing the project.
+		# The route identifying the project.
 	"""
+
 	root: (routes.Selector) = None
-	context: (typing.Optional[routes.Selector]) = None
-	category: (typing.Optional[routes.Selector]) = None
+	context: (routes.Segment) = None
 	project: (routes.Selector) = None
+
+	@property
+	def enclosure(self) -> bool:
+		"""
+		# Whether the original subject was referring to an enclosure.
+		"""
+		return self.project is None
+
+	def select(self, factor):
+		r = (self.project or (self.root//self.context))
+		return r + factor.split('.')
 
 @dataclass
 class Information(object):
@@ -65,7 +74,6 @@ class Information(object):
 	name: (typing.Text) = None
 	icon: (typing.Mapping) = None
 	abstract: (object) = None
-	versioning: (str) = None
 	controller: (str) = None
 	contact: (str) = None
 
@@ -74,27 +82,3 @@ IReference.__qualname__ = __name__ + '.IReference'
 ISymbols = typing.Mapping[(typing.Text,typing.Collection[IReference])]
 
 IDocumentation = typing.Mapping[(str,"'http://if.fault.io/text'")]
-
-from enum import Enum, unique
-
-@unique
-class Area(Enum):
-	"""
-	# The relative area that a factor exists within relative to another factor.
-
-	# Whenever a relationship is designated between two Factors, it
-	# is often reasonable to identify the locality so that decisions
-	# can be made about how resolution is performed.
-	"""
-
-	factor = 0
-	project = 1
-	category = 2
-	context = 3
-	product = 4
-	environment = 5
-	system = 6
-
-	# Primarily use to declare that a factor could not be found.
-	unavailable = 255
-del Enum, unique
