@@ -285,7 +285,7 @@ def infrastructure(fc:FactorContextPaths, filename="infrastructure.txt") -> ISym
 	infra = {}
 	i_sources = [
 		(x/'context'/filename)
-		for x in (fc.root@fc.context)
+		for x in (fc.root >> fc.context)
 		if x is not None
 	]
 
