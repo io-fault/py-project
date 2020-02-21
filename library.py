@@ -76,10 +76,10 @@ def identify_filesystem_context(route:routes.Selector) -> tuple:
 	"""
 
 	current = route
-	if current.is_regular_file():
+	if current.fs_type() == 'data':
 		current **= 1
 
-	while not (current//explicit.ProjectSignal).is_regular_file():
+	while not (current//explicit.ProjectSignal).fs_type() == 'data':
 		current **= 1
 		if current.absolute == ():
 			# Hit root directory; no project.txt signals.
@@ -93,7 +93,7 @@ def identify_filesystem_context(route:routes.Selector) -> tuple:
 
 	# Build context segment; path from product to project.
 	ctx = []
-	while (current//explicit.ContextSignal).is_regular_file():
+	while (current//explicit.ContextSignal).fs_type() == 'data':
 		if current.absolute == ():
 			if project is None:
 				raise ProtocolViolation("no product directory in route ancestry")
@@ -249,7 +249,7 @@ def sources(root:files.Path, factor:routes.Segment) -> typing.Collection[files.P
 
 	final = factor.identifier
 	container = root//factor.container
-	if (container/final).is_directory():
+	if (container/final).fs_type() == 'directory':
 		# Directories must stand alone.
 		return [container/final]
 

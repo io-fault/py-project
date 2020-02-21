@@ -41,7 +41,7 @@ def isource(route):
 			return False
 	else:
 		# file has no extension to identify its project local type.
-		if route.type() == 'file':
+		if route.fs_type() == 'data':
 			return False
 
 	return True
