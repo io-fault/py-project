@@ -127,7 +127,8 @@ def find(paths, factors:typing.Sequence[routes.Segment]):
 				break
 			else:
 				prefix = local.identifier + '.'
-				sources = [x for x in local.container.files() if x.identifier.startswith(prefix)]
+				it = local.container.fs_iterfiles('data')
+				sources = [x for x in it if x.identifier.startswith(prefix)]
 				if sources:
 					# factor exists as a file.
 					break
@@ -146,7 +147,7 @@ def find(paths, factors:typing.Sequence[routes.Segment]):
 			# Expand enclosures.
 			directory = [
 				(fpath/x.identifier, x, factorcontext(identify_filesystem_context(x)))
-				for x in fc.project.subdirectories()
+				for x in fc.project.fs_iterfiles('directory')
 				if x.identifier not in ignored
 			]
 
@@ -165,7 +166,7 @@ def _expand(path):
 
 	return [
 		(x, factorcontext(identify_filesystem_context(x)))
-		for x in path.subdirectories()
+		for x in path.fs_iterfiles('directory')
 		if x.identifier not in ignored and '.' not in x.identifier
 	]
 
@@ -254,7 +255,7 @@ def sources(root:files.Path, factor:routes.Segment) -> typing.Collection[files.P
 		return [container/final]
 
 	final += '.'
-	return [x for x in container.subnodes()[1] if x.identifier.startswith(final)]
+	return [x for x in container.fs_iterfiles('data') if x.identifier.startswith(final)]
 
 def universal(fc:FactorContextPaths, project:routes.Segment, relative_path:str):
 	"""

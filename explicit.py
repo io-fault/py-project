@@ -65,8 +65,8 @@ def query(route, ignore=core.ignored):
 		srcdir = r//SourceSignal
 		spec = r//FactorDefinitionSignal
 
-		if srcdir.exists() and spec.exists():
-			whole[path] = ('factor', 'directory', {}, r.files())
+		if srcdir.fs_type() == 'directory' and spec.fs_type() == 'data':
+			whole[path] = ('factor', 'directory', {}, list(r.fs_iterfiles('data')))
 
 			spec_ctx, data = struct.parse(spec.get_text_content())
 
@@ -75,7 +75,7 @@ def query(route, ignore=core.ignored):
 			cpath = routes.Segment.from_sequence(path)
 			composites[cpath] = (data['domain'], data['type'], data.get('symbols', set()), sources)
 		else:
-			dirs, files = r.subnodes()
+			dirs, files = r.fs_list()
 			whole[path] = (
 				'factor', 'directory', {},
 				[x for x in files if isource(x)]
