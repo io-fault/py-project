@@ -30,6 +30,37 @@ ignored = {
 	'.darcs',
 }
 
+class FactorPath(routes.Segment):
+	"""
+	# A &routes.Segment identifying a factor.
+
+	# The path is always relative; usually relative to either a product or project.
+	# Identifiers in the path exclude any filename extensions.
+	"""
+
+	def __str__(self):
+		return '.'.join(self.absolute)
+
+	def __repr__(self):
+		return "(factor@%r)" %(str(self),)
+
+	def __matmul__(self, fpath:str):
+		"""
+		# Relative and absolute constructor.
+		"""
+
+		if fpath[:1] == ".":
+			rpath = fpath.lstrip(".")
+			segment = self ** (len(fpath) - len(rpath))
+		else:
+			# Plain extension.
+			rpath = fpath
+			segment = self
+
+		return (segment + rpath.split('.'))
+
+factor = FactorPath(None, ())
+
 @dataclass
 class FactorContextPaths(object):
 	"""
@@ -41,6 +72,7 @@ class FactorContextPaths(object):
 	# [ Properties ]
 	# /root/
 		# The route containing either the &project or the &context enclosure.
+		# Also known as the Product Directory.
 	# /context/
 		# The context project relevant to &project.
 		# &None if the project is not managed within a Project Context.
@@ -49,7 +81,7 @@ class FactorContextPaths(object):
 	"""
 
 	root: (routes.Selector) = None
-	context: (routes.Segment) = None
+	context: (FactorPath) = None
 	project: (routes.Selector) = None
 
 	@property
@@ -62,6 +94,12 @@ class FactorContextPaths(object):
 	def select(self, factor):
 		r = (self.project or (self.root//self.context))
 		return r + factor.split('.')
+
+	def factor(self):
+		"""
+		# Construct a project factor path.
+		"""
+		return FactorPath(None, tuple(self.project.segment(self.root).absolute)).delimit()
 
 @dataclass
 class Information(object):
@@ -82,3 +120,34 @@ IReference.__qualname__ = __name__ + '.IReference'
 ISymbols = typing.Mapping[(typing.Text,typing.Collection[IReference])]
 
 IDocumentation = typing.Mapping[(str,"'http://if.fault.io/text'")]
+
+FactorType = typing.Tuple[
+	FactorPath, # Project relative path.
+	typing.Tuple[
+		str, # Domain
+		str, # Type
+		typing.Set[str], # Symbols
+		typing.Iterable[routes.Selector], # Sources
+	]
+]
+
+class Protocol(object):
+	"""
+	# A project factor protocol.
+	"""
+	def __init__(self, parameters:dict):
+		self.parameters = parameters
+
+	def infrastructure(self, fc:FactorContextPaths) -> ISymbols:
+		raise NotImplementedError("core protocol method must be implemented by subclass")
+
+	def information(self, fc:FactorContextPaths) -> Information:
+		raise NotImplementedError("core protocol method must be implemented by subclass")
+
+	def iterfactors(self, route) -> typing.Iterable[FactorType]:
+		raise NotImplementedError("core protocol method must be implemented by subclass")
+
+class ProtocolViolation(Exception):
+	"""
+	# The route was identified as not conforming to the protocol.
+	"""

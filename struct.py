@@ -7,6 +7,7 @@ import typing
 
 from ..text import document
 from ..text import format
+from ..text.types import Paragraph
 
 def _project_interpret(obj):
 	t = obj[0]

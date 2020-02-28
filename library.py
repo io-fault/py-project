@@ -41,7 +41,7 @@ def factorcontext(objects:tuple) -> FactorContextPaths:
 	"""
 	# Cached set of &FactorContextPaths instances.
 
-	# Uusally the appropriate way to instantiate &FactorContextPaths to avoid
+	# Usually the appropriate way to instantiate &FactorContextPaths to avoid
 	# redundancy in cases where local caches cannot or should not be shared
 	# within an application.
 
@@ -230,7 +230,7 @@ def navigate(segment:routes.Segment, path:str):
 	# the ascent of the manipulation.
 
 	#!/pl/python
-		navigate(S'fault.project.library', '.core')
+		navigate(factor@'fault.project.library', '.core')
 
 	# Similar to relative Python's imports.
 	"""
