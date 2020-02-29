@@ -1,18 +1,21 @@
 """
 # Factored Product Data structures.
 
-# [ Types ]
+# [ IReference ]
+# Python &str qualifying an object for use as a reference to a Target.
 
-# /IReference/
-	# Python &str qualifying an object for use as a reference to a Target.
-# /ISymbols/
-	# The effective contents of an (filename)`infrastructure.txt` factor.
-	# This is a mapping defining Infrastructure Symbols to abstract references.
-	# The absract references are [data] typed strings that are intended to
-	# be interpreted by whatever context is processing or reading them.
-# /IDocumentation/
-	# The paragraph contents of an (filename)`infrastructure.txt` factor.
-	# Symbols containing documentation
+# [ ISymbols ]
+# The effective contents of an (filename)`infrastructure.txt` factor.
+# This is a mapping defining Infrastructure Symbols to abstract references.
+# The absract references are [data] typed strings that are intended to
+# be interpreted by whatever context is processing or reading them.
+
+# [ IDocumentation ]
+# The paragraph contents of an (filename)`infrastructure.txt` factor.
+# Symbols containing documentation
+
+# [ FactorType ]
+# Annotation signature for factor data produced by project protocols.
 """
 import typing
 from dataclasses import dataclass
