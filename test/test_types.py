@@ -1,7 +1,7 @@
 """
 # Analyze core data types.
 """
-from .. import core as module
+from .. import types as module
 
 def test_FactorPath_constructors(test):
 	"""
