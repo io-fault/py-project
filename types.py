@@ -20,7 +20,7 @@
 import typing
 from dataclasses import dataclass
 
-from fault import routes
+from .. import routes
 
 ignored = {
 	'__pycache__',
