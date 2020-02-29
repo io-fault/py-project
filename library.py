@@ -223,25 +223,6 @@ def information(fc:FactorContextPaths) -> Information:
 		info['contact'],
 	)
 
-def navigate(segment:routes.Segment, path:str):
-	"""
-	# Select the factor relative to &segment using the given relative path.
-	# &path is a Factor Path String with optional leading (character)`.` designating
-	# the ascent of the manipulation.
-
-	#!/pl/python
-		navigate(factor@'fault.project.library', '.core')
-
-	# Similar to relative Python's imports.
-	"""
-
-	rpath = path.lstrip(".")
-	current = segment ** (len(path) - len(rpath))
-	if rpath:
-		return segment.__class__(current, tuple(rpath.split(".")))
-	else:
-		return current
-
 def sources(root:files.Path, factor:routes.Segment) -> typing.Collection[files.Path]:
 	"""
 	# Retrieve the set of &files.Path paths that may be
