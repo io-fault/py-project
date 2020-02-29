@@ -257,12 +257,12 @@ def sources(root:files.Path, factor:routes.Segment) -> typing.Collection[files.P
 	final += '.'
 	return [x for x in container.fs_iterfiles('data') if x.identifier.startswith(final)]
 
-def universal(fc:FactorContextPaths, project:routes.Segment, relative_path:str):
+def universal(fc:FactorContextPaths, project:FactorPath, relative_path:str):
 	"""
 	# Identify the universal resource indicator of a relative factor path.
 	"""
 
-	product_relative = navigate((project/'infrastructure'), relative_path)
+	product_relative = (project/'infrastructure')@relative_path
 	file_route, *_ = sources(fc.root, product_relative) # Factor does not exist?
 	target_fc = factorcontext(identify_filesystem_context(file_route))
 
@@ -297,13 +297,11 @@ def infrastructure(fc:FactorContextPaths, filename="infrastructure.txt") -> ISym
 			ctx, content = struct.parse(x.get_text_content())
 			infra.update(content)
 
-	project_path = fc.project.segment(fc.root)
-
 	uinfra = {
 		k: v.__class__([
 			t[1]
 			if (t[0].split("/", 3)[:2]) == ['reference', 'hyperlink']
-			else universal(fc, project_path, t[1])
+			else universal(fc, fc.factor(), t[1])
 			for t in v
 		])
 		for k, v in infra.items()
@@ -382,9 +380,7 @@ class FactorSet(object):
 			if identifier not in v:
 				continue
 
-			i = v[identifier]
-			route = k.__class__(k, tuple(i.split('.')))
-			fc = factorcontext(identify_filesystem_context(route))
+			fc = factorcontext(identify_filesystem_context(k//v[identifier]))
 			info = information(fc)
 			infra = infrastructure(fc)
 			return (fc, info, infra)

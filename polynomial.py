@@ -66,13 +66,11 @@ class V1(core.Protocol):
 				ctx, content = struct.parse(x.get_text_content())
 				infra.update(content)
 
-		project_path = fc.project.segment(fc.root)
-
 		uinfra = {
 			k: v.__class__([
 				t[1]
 				if (t[0].split("/", 3)[:2]) == ['reference', 'hyperlink']
-				else self._legacy.universal(fc, project_path, t[1])
+				else self._legacy.universal(fc, fc.factor(), t[1])
 				for t in v
 			])
 			for k, v in infra.items()
