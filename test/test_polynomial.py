@@ -6,7 +6,7 @@ import itertools
 from ... import routes
 from ...system import files
 
-from .. import core
+from .. import types
 from .. import polynomial as module
 
 extmap = {
@@ -68,7 +68,7 @@ def test_V1_iterfactors_whole(test):
 	vf in test/sources
 	pt in test/sources
 
-	py_seg = core.FactorPath.from_sequence(['test'])
+	py_seg = types.FactorPath.from_sequence(['test'])
 	py_struct = idx[py_seg]
 	test/py_struct == ('python', 'module', set(), [py])
 
@@ -81,7 +81,7 @@ def test_V1_iterfactors_composite(test):
 	v = (td/'cf'/'src'/'valid.c').fs_init()
 	fs = dict(p.iterfactors(td))
 
-	cf = core.FactorPath.from_sequence(['cf'])
+	cf = types.FactorPath.from_sequence(['cf'])
 	fls = list(fs[cf][-1])
 	test/len(fls) == 1
 	v in test/fls
@@ -97,7 +97,7 @@ def test_V1_iterfactors_implied_composite(test):
 		v = (d/('cf.'+it)/'valid.c').fs_init()
 		fs = dict(p.iterfactors(d))
 
-		cf = core.FactorPath.from_sequence(['cf'])
+		cf = types.FactorPath.from_sequence(['cf'])
 		fls = list(fs[cf][-1])
 		test/len(fls) == 1
 		v in test/fls
@@ -109,7 +109,7 @@ def test_V1_information(test):
 	"""
 	td = test.exits.enter_context(files.Path.fs_tmpdir())
 
-	src = core.Information(**{
+	src = types.Information(**{
 		'identifier': 'http://fault.io/test',
 		'name': 'test',
 		'icon': {
@@ -131,7 +131,7 @@ def test_V1_information(test):
 
 	pi = (td/'test'/'project.txt').fs_init(fake)
 	p = module.V1({})
-	fc = core.FactorContextPaths(td, core.factor, td/'test')
+	fc = types.FactorContextPaths(td, types.factor, td/'test')
 	data = p.information(fc)
 	test/data == src
 

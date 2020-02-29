@@ -15,7 +15,7 @@ import functools
 from .. import routes
 from ..system import files
 
-from .core import *
+from .types import *
 try:
 	del dataclass
 except:

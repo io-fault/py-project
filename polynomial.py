@@ -8,7 +8,7 @@ import itertools
 from .. import routes
 from ..system import files
 
-from . import core
+from . import types
 from . import struct
 
 ProjectSignal = routes.Segment.from_sequence(['project.txt'])
@@ -18,7 +18,7 @@ FactorDefinitionSignal = routes.Segment.from_sequence(['factor.txt'])
 def load_project_information(file:routes.Selector):
 	info = struct.parse(file.get_text_content())[1] #* ! CONTEXT: qualification required.
 
-	return core.Information(
+	return types.Information(
 		info['identifier'],
 		info['name'],
 		info.get('icon', {}),
@@ -27,7 +27,7 @@ def load_project_information(file:routes.Selector):
 		info['contact'],
 	)
 
-class V1(core.Protocol):
+class V1(types.Protocol):
 	"""
 	# polynomial-1 protocol implementation.
 	"""
@@ -40,7 +40,7 @@ class V1(core.Protocol):
 		'part': 'partial',
 	}
 
-	def information(self, fc:core.FactorContextPaths, filename="project.txt") -> core.Information:
+	def information(self, fc:types.FactorContextPaths, filename="project.txt") -> types.Information:
 		"""
 		# Retrieve the information record of the project.
 		"""
@@ -48,7 +48,7 @@ class V1(core.Protocol):
 
 	from . import library as _legacy
 
-	def infrastructure(self, fc:core.FactorContextPaths, filename="infrastructure.txt") -> core.ISymbols:
+	def infrastructure(self, fc:types.FactorContextPaths, filename="infrastructure.txt") -> types.ISymbols:
 		"""
 		# Extract and interpret infrastructure symbols used to expresss abstract requirements.
 		"""
@@ -122,7 +122,7 @@ class V1(core.Protocol):
 			if not y.identifier.startswith('.')
 		)
 
-	def iterfactors(self, route:files.Path, ignore=core.ignored) -> typing.Iterable[core.FactorType]:
+	def iterfactors(self, route:files.Path, ignore=types.ignored) -> typing.Iterable[types.FactorType]:
 		"""
 		# Query the &route for factors.
 		"""
@@ -133,7 +133,7 @@ class V1(core.Protocol):
 
 		while cur:
 			r, path = cur.popleft()
-			segment = core.FactorPath.from_sequence(path)
+			segment = types.FactorPath.from_sequence(path)
 
 			assert r.identifier not in ignore # cache or integration directory
 
@@ -145,7 +145,7 @@ class V1(core.Protocol):
 				spec_ctx, data = struct.parse(spec.get_text_content())
 
 				sources = self.collect_sources(srcdir)
-				cpath = core.FactorPath.from_sequence(path)
+				cpath = types.FactorPath.from_sequence(path)
 
 				yield (cpath, (data['domain'], data['type'], data.get('symbols', set()), sources))
 
@@ -169,7 +169,7 @@ class V1(core.Protocol):
 					itype = self.implicit_types.get(factor_type)
 
 					if itype:
-						cpath = core.FactorPath.from_sequence(path+(factor_id,))
+						cpath = types.FactorPath.from_sequence(path+(factor_id,))
 						sources = self.collect_sources(x)
 						yield (cpath, ('system', itype, set(), sources))
 					else:
