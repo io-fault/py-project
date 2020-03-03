@@ -32,6 +32,7 @@ class V1(types.Protocol):
 	# polynomial-1 protocol implementation.
 	"""
 
+	identifier = 'polynomial-1'
 	implicit_types = {
 		'exe': 'executable',
 		'ext': 'extension',
