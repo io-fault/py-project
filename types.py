@@ -31,6 +31,7 @@ ignored = {
 	'.svn',
 	'.hg',
 	'.darcs',
+	'.pijul',
 }
 
 class FactorPath(routes.Segment):
