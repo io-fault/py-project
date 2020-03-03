@@ -177,3 +177,14 @@ class V1(types.Protocol):
 						# No a recognized implicit type.
 						pass
 			del dirs, files
+
+if __name__ == '__main__':
+	import sys
+	proto = V1({})
+	for x in sys.argv[1:]:
+		path = files.Path.fs_select(x)
+		info = load_project_information(path/'project.txt')
+
+		with (path/'.protocol').fs_open('tw') as f:
+			pdata = '%s %s\n' %(info.identifier, 'factors/polynomial-1')
+			f.write(pdata)
