@@ -351,3 +351,13 @@ class Product(object):
 					stack.append(d)
 				else:
 					yield p + (d,)
+
+if __name__ == '__main__':
+	import sys
+	from ..system import files
+	path, *roots = sys.argv[1:]
+	pd = Product(files.Path.fs_select(path))
+	if roots:
+		pd.roots = set(types.factor@x for x in roots)
+	pd.update()
+	pd.store()
