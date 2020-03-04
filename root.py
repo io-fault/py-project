@@ -49,6 +49,8 @@ def scan_product_directory(
 	i = 0
 	stack = collections.deque()
 
+	# Special cases for the roots.
+	# Produces additional root entries.
 	if roots:
 		for fp in roots:
 			yield ('root', fp)
@@ -66,6 +68,10 @@ def scan_product_directory(
 					pass
 	else:
 		for d in route.fs_iterfiles('directory'):
+			i += 1
+			if i > limit:
+				raise RuntimeError("filesystem scan limit exceeded")
+
 			if '.' in d.identifier:
 				continue
 
