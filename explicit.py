@@ -15,7 +15,7 @@ import collections
 
 from .. import routes
 
-from . import core
+from . import types
 from . import struct
 
 ProjectSignal = routes.Segment.from_sequence(['project.txt'])
@@ -46,7 +46,7 @@ def isource(route):
 
 	return True
 
-def query(route, ignore=core.ignored):
+def query(route, ignore=types.ignored):
 	"""
 	# Query for identifying composite factors from an explicitly typed tree.
 	"""
