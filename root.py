@@ -6,8 +6,8 @@ import collections
 import operator
 import itertools
 
+from ..context import tools
 from .. import routes
-
 from . import types
 
 def parse_project_index(lines:typing.Iterable[str]):
@@ -193,6 +193,27 @@ class Product(object):
 		ids, proto = self.projects[identifier]
 		return ids, self.import_protocol(proto)
 
+	def select(self, constraint:types.FactorPath) -> typing.Iterable[types.FactorPath]:
+		"""
+		# Retrieve project (path) entries that have the given prefix, &constraint.
+
+		# If the argument identifies a context, generate the projects contained therein.
+		# If the argument is a nil &types.FactorPath, generate all project paths.
+		"""
+
+		if constraint in self.contexts:
+			prefix = str(constraint) + '.'
+			for p in self.local:
+				if str(p).startswith(prefix):
+					yield p
+		elif constraint in self.local:
+			yield constraint
+		elif len(constraint) == 0:
+			yield from self.local
+		else:
+			# No match.
+			pass
+
 	def read_protocol(self, route:routes.Selector):
 		"""
 		# Retrieve the protocol data from the dot-protocol file
@@ -351,6 +372,202 @@ class Product(object):
 					stack.append(d)
 				else:
 					yield p + (d,)
+
+	def split(self, fp:types.FactorPath):
+		"""
+		# Separate the project portion from &fp.
+		# Returns a pair of &types.FactorPath; the project and the factor.
+		"""
+		if fp in self.local:
+			return (fp, types.factor)
+
+		suffix = str(fp)
+		for x in self.local:
+			xstr = str(x)
+			if suffix.startswith(xstr + '.'):
+				return (x, types.factor@suffix[len(xstr)+1:])
+
+class Project(object):
+	"""
+	# Project Interface joining relavant routes and protocol instances.
+	"""
+
+	def __init__(self, pd:Product, pi:str, pf:types.FactorPath, proto:types.Protocol):
+		self.product = pd
+		self.protocol = proto
+
+		self.identifier = pi
+		self.factor = pf
+		self.route = self.product.route//pf
+
+	@tools.cachedproperty
+	def information(self) -> types.Information:
+		return self.protocol.information(self.route)
+
+	@tools.cachedproperty
+	def infrastructure(self):
+		return self.protocol.infrastructure(self.absolute, self.route)
+
+	def integral(self, variants, fp:types.FactorPath, suffix='i'):
+		return self.protocol.integral(self.route, variants, fp, suffix=suffix)
+
+	def itercontexts(self) -> typing.Iterable[types.FactorPath]:
+		"""
+		# Generate &types.FactorPath instances identifying the context project stack.
+		# Order is near to far.
+		"""
+		for x in ~(self.factor ** 1):
+			yield x/'context'
+
+	def relative(self, fpath:str):
+		"""
+		# Transform a (possibly project relative) factor path string into
+		# a project path, factor path pair.
+
+		# If the &fpath does not start with a series of periods(`.`), this
+		# is equivalent to &Product.split.
+		"""
+
+		if fpath.startswith('.'):
+			product_relative = (self.factor/'project')@fpath
+		else:
+			product_relative = types.factor@fpath
+
+		return self.product.split(product_relative)
+
+	def absolute(self, fpath:str):
+		"""
+		# Get the (project identifier, factor path) pair from the given project relative factor path.
+		"""
+		pj, fp = self.relative(fpath)
+		return (self.product.local[pj][0], fp)
+
+	def select(self, factor:types.FactorPath):
+		"""
+		# Retrieve factors within the given path.
+		"""
+		for fp, fd in self.protocol.iterfactors(self.route//factor):
+			yield (factor//fp, fd)
+
+	def split(self, fp:types.FactorPath):
+		"""
+		# Separate the factor path from the fragment path.
+		# Returns a pair of &types.FactorPath; the project and the factor.
+		"""
+		for i in self.select(fp):
+			# Exact match.
+			return (fp, types.factor)
+
+		xstr = str(fp)
+		for p in ~fp.container:
+			for i in self.select(p):
+				return (p, types.factor@xstr[len(str(p)) + 1:])
+
+	def fullsplit(self, qpath:types.FactorPath):
+		"""
+		# Separate the project path, factor path, and fragment path
+		# from the given fully qualified factor path.
+		"""
+		pj, fp = self.product.split(qpath)
+		fp, fm = self.split(fp)
+		return (pj, fp, fm)
+
+class Context(object):
+	"""
+	# &Product and &Project instance cache and search path.
+	"""
+
+	@classmethod
+	def import_protocol(Class, identifier:str) -> typing.Type[types.Protocol]:
+		"""
+		# Retrieve the protocol class using the &identifier.
+		"""
+		module_name, classname = protocols[identifier]
+		import importlib
+		module = importlib.import_module(module_name)
+		return getattr(module, classname)
+
+	def __init__(self):
+		self.product_sequence = []
+		self.instance_cache = {}
+
+	def connect(self, route:routes.Selector) -> Product:
+		"""
+		# Add a new Product instance to the context.
+
+		# Returns an existing &Product instance if the route was in the cache, otherwise
+		# creates a new instance and places it in the cache.
+		"""
+		key = ('product', route)
+		if key in self.instance_cache:
+			return self.instance_cache[key]
+
+		pd = Product(route)
+		pd.load()
+
+		self.product_sequence.append(pd)
+		self.instance_cache[key] = pd
+		return pd
+
+	def project(self, id:str) -> Project:
+		"""
+		# Retrieve a &Project instance from the context.
+		# If no project is present in the instance cache, scan the
+		# connected products for a match.
+		"""
+		key = ('project', id)
+		if key in self.instance_cache:
+			return self.instance_cache[key]
+
+		for pd in self.product_sequence:
+			if id not in pd.projects:
+				continue
+
+			fp, proto_id = pd.projects[id]
+			proto = self.import_protocol(proto_id)
+			pj = Project(pd, id, fp, proto({}))
+
+		self.instance_cache[key] = pj
+		return pj
+
+	def itercontexts(self, pj:Project) -> typing.Iterable[Project]:
+		"""
+		# Generate &Project instances representing the leading contexts of the given Project, &pj.
+		"""
+		pd = pj.product
+		for pj_ctx_path in pj.itercontexts():
+			id = pd.identifier_by_factor(pj_ctx_path)[0]
+			yield self.project(id)
+
+	def symbols(self, pj:Project) -> typing.Mapping:
+		"""
+		# Construct a snapshot of symbols for the project with respect to the given &context.
+		"""
+		projects = list(self.itercontexts(pj))
+		projects.reverse()
+		projects.append(pj)
+
+		# Reverse order chain map. Symbols defined nearest to project have priority.
+		return collections.ChainMap(*(pj.infrastructure for pj in projects))
+
+	def load(self):
+		"""
+		# Fully populate the instance cache with all of the projects from
+		# all of the connected products.
+		"""
+		for pd in reversed(self.product_sequence):
+			for id, (fp, proto_id) in pd.projects.items():
+				key = ('project', id)
+				proto = self.import_protocol(proto_id)
+				self.instance_cache[key] = Project(pd, id, fp, proto({}))
+
+	def index(self, product:routes.Selector):
+		"""
+		# Find the index of the &Product whose route is equal to &product.
+		"""
+		for i, x in enumerate(self.product_sequence):
+			if x.route == product:
+				return i
 
 if __name__ == '__main__':
 	import sys

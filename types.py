@@ -142,10 +142,10 @@ class Protocol(object):
 	def __init__(self, parameters:dict):
 		self.parameters = parameters
 
-	def infrastructure(self, fc:FactorContextPaths) -> ISymbols:
-		raise NotImplementedError("core protocol method must be implemented by subclass")
+	def infrastructure(self, absolute, route) -> ISymbols:
+		return {}
 
-	def information(self, fc:FactorContextPaths) -> Information:
+	def information(self, project_route) -> Information:
 		raise NotImplementedError("core protocol method must be implemented by subclass")
 
 	def iterfactors(self, route) -> typing.Iterable[FactorType]:

@@ -11,6 +11,10 @@ from ..system import files
 from . import types
 from . import struct
 
+# Directory Structure of Integrals
+default_integral_segment = [['system', 'architecture'], ['intention']]
+
+# Segments noting the position of significant files in a polynomial project.
 ProjectSignal = routes.Segment.from_sequence(['project.txt'])
 SourceSignal = routes.Segment.from_sequence(['src'])
 FactorDefinitionSignal = routes.Segment.from_sequence(['factor.txt'])
@@ -27,6 +31,61 @@ def load_project_information(file:routes.Selector):
 		info['contact'],
 	)
 
+def factor_integrals(project:routes.Selector, factor:routes.Segment, directory='__f-int__'):
+	"""
+	# Retrieve the set of integrals produced by the &factor contained by &project.
+	# A segment path is used to identify the factor in order to emphasize that
+	# a direct file path should not be used.
+	"""
+	path = project//factor
+	return (path * directory).delimit()
+
+def compose_integral_path(groups, default, variants:typing.Mapping, name, suffix):
+	"""
+	# Create a variant path (list of strings) according to the given &groups and &variants.
+	"""
+	segments = []
+
+	for g in groups[:-1]:
+		fields = ([(variants.get(x) or default) for x in g])
+		segment = '-'.join(fields)
+		segments.append(segment)
+
+	# Final identifier.
+	fields = [name]
+	fields.extend((variants.get(x) or default) for x in groups[-1])
+	if suffix:
+		fields.append(suffix)
+	segments.append('.'.join(fields))
+
+	return segments
+
+def parse_integral_descriptor_1(string:str) -> typing.Iterator[typing.Sequence[str]]:
+	"""
+	# Given the data from a (system/filename)`fields.txt` file located inside
+	# a factor integral set directory, return an iterator producing sequences that
+	# detail the groupings used to designate the location of a variant.
+
+	# Normally unused as the default groupings are encouraged.
+
+	# [ Parameters ]
+	# /string/
+		# The text format is newline separated records consisting of whitespace separated fields.
+		# Each line containing fields designates a directory level that will contain
+		# the variants expressed on subsequent lines. The final record designating the
+		# variants used to specify the integral file, often this should be "name".
+
+		# No escaping mechanism is provided as the fields are required to be identifiers.
+	"""
+
+	for line in map(str.strip, string.split('\n')):
+		if line[:1] in ('#', ''):
+			# Ignore comments and empty lines.
+			continue
+
+		# Strip the fields in each group ignoring empty fields.
+		yield [x for x in map(str.strip, line.split()) if x]
+
 class V1(types.Protocol):
 	"""
 	# polynomial-1 protocol implementation.
@@ -41,44 +100,43 @@ class V1(types.Protocol):
 		'part': 'partial',
 	}
 
-	def information(self, fc:types.FactorContextPaths, filename="project.txt") -> types.Information:
+	def information(self, project:routes.Selector, filename="project.txt") -> types.Information:
 		"""
 		# Retrieve the information record of the project.
 		"""
-		return load_project_information(fc.project / filename)
+		return load_project_information(project / filename)
 
-	from . import library as _legacy
-
-	def infrastructure(self, fc:types.FactorContextPaths, filename="infrastructure.txt") -> types.ISymbols:
+	def infrastructure(self, absolute, route, filename="infrastructure.txt") -> types.ISymbols:
 		"""
 		# Extract and interpret infrastructure symbols used to expresss abstract requirements.
 		"""
-		infra = {}
-		i_sources = [
-			(x/'context'/filename)
-			for x in (fc.root >> fc.context)
-			if x is not None
-		]
+		ifp = (route/filename)
 
-		i_sources.append(fc.project/filename)
+		if ifp.fs_type() == 'data':
+			return {
+				k: [
+					tuple(t[1].split('#', 1))
+					if (t[0].split("/", 3)[:2]) == ['reference', 'hyperlink']
+					else tuple(map(str, absolute(t[1])))
+					for t in v
+				]
+				for k, v in struct.parse(ifp.get_text_content())[1].items()
+				if not isinstance(v, struct.Paragraph)
+			}
+		else:
+			return {}
 
-		for x in i_sources:
-			if x.exists():
-				ctx, content = struct.parse(x.get_text_content())
-				infra.update(content)
-
-		uinfra = {
-			k: v.__class__([
-				t[1]
-				if (t[0].split("/", 3)[:2]) == ['reference', 'hyperlink']
-				else self._legacy.universal(fc, fc.factor(), t[1])
-				for t in v
-			])
-			for k, v in infra.items()
-			if not isinstance(v, struct.Paragraph)
-		}
-
-		return uinfra
+	def integral(self,
+			route:routes.Selector, # Project Directory Route
+			variants,
+			fp:types.FactorPath,
+			default='void',
+			groups=default_integral_segment,
+			suffix='i'
+		):
+		idir = factor_integrals(route, fp)
+		seg = compose_integral_path(groups, default, variants, fp.identifier, suffix)
+		return (idir + seg)
 
 	def isource(self, route:files.Path):
 		"""
@@ -97,13 +155,13 @@ class V1(types.Protocol):
 
 		return True
 
-	def factor_structs(self, paths:typing.Iterable[files.Path]):
+	def factor_structs(self, paths:typing.Iterable[files.Path], _nomap={}):
 		"""
 		# Given an iterable of paths identifying whole factors, resolve their
 		# domain and type using the (id)`source-extension-map` parameter and
 		# the file's dot-extension.
 		"""
-		extmap = self.parameters.get('source-extension-map')
+		extmap = self.parameters.get('source-extension-map', _nomap)
 
 		for p in paths:
 			name, suffix = p.identifier.rsplit('.')

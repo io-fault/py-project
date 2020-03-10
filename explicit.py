@@ -23,11 +23,6 @@ ContextSignal = routes.Segment.from_sequence(['context', 'project.txt'])
 SourceSignal = routes.Segment.from_sequence(['src'])
 FactorDefinitionSignal = routes.Segment.from_sequence(['factor.txt'])
 
-class ProtocolViolation(Exception):
-	"""
-	# The route was identified as not conforming to the protocol.
-	"""
-
 def isource(route):
 	"""
 	# Determine if the route is considered to be a source file for

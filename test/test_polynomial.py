@@ -131,8 +131,7 @@ def test_V1_information(test):
 
 	pi = (td/'test'/'project.txt').fs_init(fake)
 	p = module.V1({})
-	fc = types.FactorContextPaths(td, types.factor, td/'test')
-	data = p.information(fc)
+	data = p.information(td/'test')
 	test/data == src
 
 if __name__ == '__main__':

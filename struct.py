@@ -100,10 +100,8 @@ def infras(data):
 
 	rd = {}
 	for k, v in main:
-		if v[0] == 'set':
+		if v[0] in {'set', 'sequence'}:
 			rd[k] = set(document.export(x[1][0][1]).sole for x in v[1]) # One fragment in item
-		elif v[0] == 'sequence':
-			rd[k] = list(document.export(x[1][0][1]).sole for x in v[1]) # One fragment in item
 		else:
 			rd[k] = document.export(v[1])
 
