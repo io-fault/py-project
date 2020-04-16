@@ -84,7 +84,7 @@ def scan_product_directory(
 				p = read_protocol(d)
 				if p is not None:
 					yield ('root', fp)
-					yield ('project', (p[0], (d,) + p[1:]))
+					yield ('project', (p[0], (types.factor // d.segment(route),) + p[1:]))
 
 	while stack:
 		current = stack.popleft()
