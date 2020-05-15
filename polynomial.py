@@ -12,7 +12,7 @@ from . import types
 from . import struct
 
 # Directory Structure of Integrals
-default_integral_segment = [['system', 'architecture'], ['intention']]
+default_image_segment = [['system', 'architecture'], ['intention']]
 
 # Segments noting the position of significant files in a polynomial project.
 ProjectSignal = routes.Segment.from_sequence(['project.txt'])
@@ -31,16 +31,16 @@ def load_project_information(file:routes.Selector):
 		info['contact'],
 	)
 
-def factor_integrals(project:routes.Selector, factor:routes.Segment, directory='__f-int__'):
+def factor_images(project:routes.Selector, factor:routes.Segment, directory='__f-int__'):
 	"""
-	# Retrieve the set of integrals produced by the &factor contained by &project.
+	# Retrieve the set of images produced by the &factor contained by &project.
 	# A segment path is used to identify the factor in order to emphasize that
 	# a direct file path should not be used.
 	"""
 	path = project//factor
 	return (path * directory).delimit()
 
-def compose_integral_path(groups, default, variants:typing.Mapping, name, suffix):
+def compose_image_path(groups, default, variants:typing.Mapping, name, suffix):
 	"""
 	# Create a variant path (list of strings) according to the given &groups and &variants.
 	"""
@@ -60,10 +60,10 @@ def compose_integral_path(groups, default, variants:typing.Mapping, name, suffix
 
 	return segments
 
-def parse_integral_descriptor_1(string:str) -> typing.Iterator[typing.Sequence[str]]:
+def parse_image_descriptor_1(string:str) -> typing.Iterator[typing.Sequence[str]]:
 	"""
 	# Given the data from a (system/filename)`fields.txt` file located inside
-	# a factor integral set directory, return an iterator producing sequences that
+	# a factor image set directory, return an iterator producing sequences that
 	# detail the groupings used to designate the location of a variant.
 
 	# Normally unused as the default groupings are encouraged.
@@ -73,7 +73,7 @@ def parse_integral_descriptor_1(string:str) -> typing.Iterator[typing.Sequence[s
 		# The text format is newline separated records consisting of whitespace separated fields.
 		# Each line containing fields designates a directory level that will contain
 		# the variants expressed on subsequent lines. The final record designating the
-		# variants used to specify the integral file, often this should be "name".
+		# variants used to specify the image file, often this should be "name".
 
 		# No escaping mechanism is provided as the fields are required to be identifiers.
 	"""
@@ -131,14 +131,14 @@ class V1(types.Protocol):
 			variants,
 			fp:types.FactorPath,
 			default='void',
-			groups=default_integral_segment,
+			groups=default_image_segment,
 			suffix='i'
 		) -> routes.Selector:
 		"""
 		# Retrieve the location of the factor's image for the given variants.
 		"""
-		idir = factor_integrals(route, fp)
-		seg = compose_integral_path(groups, default, variants, fp.identifier, suffix)
+		idir = factor_images(route, fp)
+		seg = compose_image_path(groups, default, variants, fp.identifier, suffix)
 		return (idir + seg)
 	integral = image
 

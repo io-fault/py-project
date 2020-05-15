@@ -408,8 +408,9 @@ class Project(object):
 	def infrastructure(self):
 		return self.protocol.infrastructure(self.absolute, self.route)
 
-	def integral(self, variants, fp:types.FactorPath, suffix='i'):
-		return self.protocol.integral(self.route, variants, fp, suffix=suffix)
+	def image(self, variants, fp:types.FactorPath, suffix='i'):
+		return self.protocol.image(self.route, variants, fp, suffix=suffix)
+	integral = image
 
 	def itercontexts(self) -> typing.Iterable[types.FactorPath]:
 		"""

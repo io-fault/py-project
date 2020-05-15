@@ -255,9 +255,9 @@ def test_Project_itercontexts(test):
 	# Validate that root is ignored.
 	test/len(list(pj.itercontexts())) == 2
 
-def test_Project_integral_polynomial(test):
+def test_Project_image_polynomial(test):
 	"""
-	# - &module.Project.integral
+	# - &module.Project.image
 	"""
 	td, pd = product_a(test)
 	pd.update()
@@ -270,10 +270,10 @@ def test_Project_integral_polynomial(test):
 		'architecture': 'noarch',
 	}
 
-	test_int = pj.integral(variants, factor@'test')
+	test_int = pj.image(variants, factor@'test')
 	test/test_int.absolute[-4:] == ('alt-1', '__f-int__', 'nosys-noarch', 'test.void.i')
 
-	subtest_int = pj.integral(variants, factor@'path.subtest')
+	subtest_int = pj.image(variants, factor@'path.subtest')
 	test/subtest_int.absolute[-4:] == ('path', '__f-int__', 'nosys-noarch', 'subtest.void.i')
 
 	variants = {
@@ -282,10 +282,10 @@ def test_Project_integral_polynomial(test):
 		'intention': 'debug'
 	}
 
-	test_int = pj.integral(variants, factor@'test')
+	test_int = pj.image(variants, factor@'test')
 	test/test_int.absolute[-4:] == ('alt-1', '__f-int__', 'nosys-noarch', 'test.debug.i')
 
-	subtest_int = pj.integral(variants, factor@'path.subtest')
+	subtest_int = pj.image(variants, factor@'path.subtest')
 	test/subtest_int.absolute[-4:] == ('path', '__f-int__', 'nosys-noarch', 'subtest.debug.i')
 
 def test_Context_import_protocol(test):
