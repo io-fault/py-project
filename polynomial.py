@@ -126,17 +126,21 @@ class V1(types.Protocol):
 		else:
 			return {}
 
-	def integral(self,
-			route:routes.Selector, # Project Directory Route
+	def image(self,
+			route:types.ProjectDirectory,
 			variants,
 			fp:types.FactorPath,
 			default='void',
 			groups=default_integral_segment,
 			suffix='i'
-		):
+		) -> routes.Selector:
+		"""
+		# Retrieve the location of the factor's image for the given variants.
+		"""
 		idir = factor_integrals(route, fp)
 		seg = compose_integral_path(groups, default, variants, fp.identifier, suffix)
 		return (idir + seg)
+	integral = image
 
 	def isource(self, route:files.Path):
 		"""
