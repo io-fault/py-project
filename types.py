@@ -22,6 +22,9 @@ from dataclasses import dataclass
 
 from .. import routes
 
+ProjectDirectory = routes.Selector
+ProductDirectory = routes.Selector
+
 ignored = {
 	'__pycache__',
 	'__f_cache__',
@@ -142,13 +145,13 @@ class Protocol(object):
 	def __init__(self, parameters:dict):
 		self.parameters = parameters
 
-	def infrastructure(self, absolute, route) -> ISymbols:
+	def infrastructure(self, absolute, route:ProjectDirectory) -> ISymbols:
 		return {}
 
-	def information(self, project_route) -> Information:
+	def information(self, route:ProjectDirectory) -> Information:
 		raise NotImplementedError("core protocol method must be implemented by subclass")
 
-	def iterfactors(self, route) -> typing.Iterable[FactorType]:
+	def iterfactors(self, route:ProjectDirectory) -> typing.Iterable[FactorType]:
 		raise NotImplementedError("core protocol method must be implemented by subclass")
 
 class ProtocolViolation(Exception):
