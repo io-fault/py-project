@@ -455,7 +455,7 @@ class Project(object):
 		# Retrieve factors within the given path.
 		"""
 		for fp, fd in self.protocol.iterfactors(self.route//factor):
-			yield (factor//fp, fd)
+			yield ((factor//fp[0], fp[1]), fd)
 
 	def split(self, fp:types.FactorPath):
 		"""

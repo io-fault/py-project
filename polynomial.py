@@ -169,8 +169,8 @@ class V1(types.Protocol):
 
 		for p in paths:
 			name, suffix = p.identifier.rsplit('.')
-			fdomain, ftype, symbols = extmap.get(suffix, ('data', 'library', set()))
-			yield (name, (fdomain, ftype, symbols, [p]))
+			ftype, symbols = extmap.get(suffix, ('unknown', set()))
+			yield (name, ftype), (symbols, [p])
 
 	def collect_sources(self, route:files.Path):
 		"""
@@ -210,15 +210,15 @@ class V1(types.Protocol):
 				sources = self.collect_sources(srcdir)
 				cpath = types.FactorPath.from_sequence(path)
 
-				yield (cpath, (data['domain'], data['type'], data.get('symbols', set()), sources))
+				yield (cpath, data['type']), (data.get('symbols', set()), sources)
 
 				dirs = ()
 				files = r.fs_iterfiles('data')
 			else:
 				dirs, files = r.fs_list('data')
 
-			for name, fstruct in self.factor_structs([x for x in files if self.isource(x)]):
-				yield (segment/name), fstruct
+			for (name, ftype), fstruct in self.factor_structs([x for x in files if self.isource(x)]):
+				yield ((segment/name), ftype), fstruct
 
 			for x in dirs:
 				if x.identifier in ignore:
@@ -234,7 +234,7 @@ class V1(types.Protocol):
 					if itype:
 						cpath = types.FactorPath.from_sequence(path+(factor_id,))
 						sources = self.collect_sources(x)
-						yield (cpath, ('system', itype, set(), sources))
+						yield (cpath, itype), (set(), sources)
 					else:
 						# No a recognized implicit type.
 						pass

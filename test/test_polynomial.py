@@ -10,11 +10,11 @@ from .. import types
 from .. import polynomial as module
 
 extmap = {
-	'py': ('python', 'module', set()),
-	'txt': ('void', 'data', set()),
+	'py': ('python-module', set()),
+	'txt': ('chapter', set()),
 }
 
-def mkfactor(ftype, fdomain, symbols):
+def mkfactor(ftype, symbols):
 	header = "! CONTEXT:\n\t/protocol/\n\t\t&<http://if.fault.io/project/factor>\n"
 	fmt = "/{key}/\n\t`{value}`\n"
 	sym = "- `{sym}`"
@@ -26,7 +26,6 @@ def mkfactor(ftype, fdomain, symbols):
 
 	return header + \
 		fmt.format(key='type', value=ftype) + \
-		fmt.format(key='domain', value=fdomain) + \
 		syms
 
 def test_V1_isource(test):
@@ -69,23 +68,22 @@ def test_V1_iterfactors_whole(test):
 	pt in test/sources
 
 	py_seg = types.FactorPath.from_sequence(['test'])
-	py_struct = idx[py_seg]
-	test/py_struct == ('python', 'module', set(), [py])
+	py_struct = idx[(py_seg, 'python-module')]
+	test/py_struct == (set(), [py])
 
 def test_V1_iterfactors_composite(test):
 	td = test.exits.enter_context(files.Path.fs_tmpdir())
 	p = module.V1({'source-extension-map': extmap})
 
-	ft = (td/'cf'/'factor.txt').fs_init(mkfactor('executable', 'system', set()).encode('utf-8'))
+	ft = (td/'cf'/'factor.txt').fs_init(mkfactor('executable', set()).encode('utf-8'))
 
 	v = (td/'cf'/'src'/'valid.c').fs_init()
 	fs = dict(p.iterfactors(td))
 
 	cf = types.FactorPath.from_sequence(['cf'])
-	fls = list(fs[cf][-1])
+	fls = list(fs[(cf, 'executable')][-1])
 	test/len(fls) == 1
 	v in test/fls
-	test/fs[cf][:2] == ('system', 'executable')
 
 def test_V1_iterfactors_implied_composite(test):
 	td = test.exits.enter_context(files.Path.fs_tmpdir())
@@ -98,10 +96,9 @@ def test_V1_iterfactors_implied_composite(test):
 		fs = dict(p.iterfactors(d))
 
 		cf = types.FactorPath.from_sequence(['cf'])
-		fls = list(fs[cf][-1])
+		fls = list(fs[(cf, p.implicit_types[it])][-1])
 		test/len(fls) == 1
 		v in test/fls
-		test/fs[cf][:2] == ('system', p.implicit_types[it])
 
 def test_V1_information(test):
 	"""
