@@ -157,6 +157,13 @@ class Product(object):
 		"""
 		return self.cache/filename
 
+	@property
+	def connections_index_route(self, filename='CONNECTIONS') -> routes.Selector:
+		"""
+		# Connection list fulfilling requirements.
+		"""
+		return self.cache/filename
+
 	def __init__(self, route:routes.Selector, limit:int=1024*4, cache:routes.Selector=None):
 		"""
 		# Initialize a &Product using &route with an empty local instance cache.
