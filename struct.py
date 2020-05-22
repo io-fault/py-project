@@ -91,6 +91,10 @@ def project(data):
 	main_dict['abstract'] = document.export(abs_para)
 	main_dict['identifier'] = id_frag[1]
 
+	# Redirect to authority.
+	if 'controller' in main_dict:
+		main_dict['authority'] = main_dict.pop('controller')
+
 	return main_dict
 
 def infras(data):

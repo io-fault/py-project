@@ -27,7 +27,7 @@ def load_project_information(file:routes.Selector):
 		info['name'],
 		info.get('icon', {}),
 		info['abstract'],
-		info['controller'],
+		info['authority'],
 		info['contact'],
 	)
 

@@ -219,7 +219,7 @@ def information(fc:FactorContextPaths) -> Information:
 		info['name'],
 		info.get('icon', {}),
 		info['abstract'],
-		info['controller'],
+		info['authority'],
 		info['contact'],
 	)
 

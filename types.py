@@ -119,8 +119,12 @@ class Information(object):
 	name: (typing.Text) = None
 	icon: (typing.Mapping) = None
 	abstract: (object) = None
-	controller: (str) = None
+	authority: (str) = None
 	contact: (str) = None
+
+	@property
+	def controller(self):
+		return self.authority
 
 IReference = typing.NewType('IReference', str)
 IReference.__qualname__ = __name__ + '.IReference'
