@@ -114,7 +114,7 @@ def test_V1_information(test):
 		},
 		# Current consistent with text.types.Paragraph
 		'abstract': [('text/normal', "Project information for testing purposes.")],
-		'controller': "Fault Engineering Laboratories",
+		'authority': "Fault Engineering",
 		'contact': "http://fault.io/critical",
 	})
 
@@ -123,7 +123,7 @@ def test_V1_information(test):
 	fake += b"/name/\n\t`test`\n"
 	fake += b"/icon/\n\t- (category)`test-category`\n"
 	fake += b"/abstract/\n\tProject information for testing purposes.\n"
-	fake += b"/controller/\n\tFault Engineering Laboratories\n"
+	fake += b"/authority/\n\tFault Engineering\n"
 	fake += b"/contact/\n\thttp://fault.io/critical\n"
 
 	pi = (td/'test'/'project.txt').fs_init(fake)
