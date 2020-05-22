@@ -3,7 +3,9 @@
 		&<http://if.fault.io/project/information>
 
 /identifier/
-	`http://fault.io/python/project`
+	&<http://fault.io/python/project>
+/icon/
+	- (emoji)`💡`
 /name/
 	`project`
 /abstract/
@@ -13,15 +15,8 @@
 	interpretation on the part of a system using conforming projects.
 	The modules and executables herein provide a toolset for Python
 	based factor processing tools.
-/icon/
-	- (emoji)`💡`
 
-/versioning/
-	continuous
-/status/
-	volatile
-
-/controller/
-	fault.io
+/authority/
+	`fault.io`
 /contact/
 	&<http://fault.io/critical>
