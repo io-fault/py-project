@@ -1,5 +1,12 @@
 """
-# Product directory protocol support.
+# Product and Project directory protocol support.
+
+# Provides three classes of interest: &Project, &Product, and &Context.
+# Context manages a project set formed from a sequence of Products that make up a factor search path;
+# Projects are cached on Context instances and Products primarily provide access and updates to a
+# product directory's index, the (filename)`.product` directory.
+
+# Even in the case of single product directories, a Context should be used to access the projects.
 """
 import typing
 import collections
