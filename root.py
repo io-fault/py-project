@@ -554,6 +554,16 @@ class Context(object):
 			id = pd.identifier_by_factor(pj_ctx_path)[0]
 			yield self.project(id)
 
+	def iterprojects(self) -> typing.Iterable[Project]:
+		"""
+		# Generate &Project instances cached from a prior &load call.
+
+		# This includes any Context Projects.
+		"""
+		for key, pj in self.instance_cache.items():
+			if key[0] == 'project':
+				yield pj
+
 	def symbols(self, pj:Project) -> typing.Mapping:
 		"""
 		# Construct a snapshot of symbols for the project with respect to the given &context.
