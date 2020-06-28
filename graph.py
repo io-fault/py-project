@@ -164,12 +164,12 @@ class Queue(object):
 
 		# Returns instance for chaining with &take.
 		"""
+		self._processed += len(projects)
+
 		if not self._pending:
 			return self
 
-		current = len(self._pending)
 		self._pending.difference_update(projects)
-		self._processed += current - len(self._pending)
 
 		try:
 			ns = self._gs.send(projects)
