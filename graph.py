@@ -118,6 +118,8 @@ class Queue(object):
 		"""
 		# Allocate instance; follow with &dispatch.
 		"""
+		self._count = 0
+		self._processed = 0
 		self._status = None
 		self._gs = None
 		self._pending = set()
@@ -134,6 +136,7 @@ class Queue(object):
 
 		projects, local = collect(context)
 		projects.sort()
+		self._count = len(projects)
 
 		ext, graphed, g = structure((projects, local))
 		self._status = g[0] # Requirements
@@ -148,7 +151,14 @@ class Queue(object):
 
 		return ext
 
-	def finish(self, *projects) -> int:
+	def status(self):
+		"""
+		# A tuple of integers telling how many projects have been reported as
+		# finished and the total number of projects.
+		"""
+		return (self._processed, self._count)
+
+	def finish(self, *projects):
 		"""
 		# Note the projects as being processed.
 
@@ -157,7 +167,10 @@ class Queue(object):
 		if not self._pending:
 			return self
 
+		current = len(self._pending)
 		self._pending.difference_update(projects)
+		self._processed += current - len(self._pending)
+
 		try:
 			ns = self._gs.send(projects)
 		except StopIteration:
