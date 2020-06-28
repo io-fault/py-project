@@ -101,7 +101,7 @@ def sequence(pair):
 	while req:
 		ns = []
 		for c in complete:
-			for r in irq.pop(c):
+			for r in irq.pop(c, ()):
 				req[r].discard(c)
 				if not req[r]:
 					ns.append(r)
