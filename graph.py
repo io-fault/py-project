@@ -12,7 +12,7 @@
 	ctx.connect(query.pwd())
 	ctx.load()
 	q = Queue()
-	ext = q.dispatch(ctx)
+	ext = q.extend(ctx)
 
 	def process(projects):
 		## Simply print dependency order for this example.
@@ -116,7 +116,7 @@ class Queue(object):
 
 	def __init__(self):
 		"""
-		# Allocate instance; follow with &dispatch.
+		# Allocate instance; follow with &extend.
 		"""
 		self._count = 0
 		self._processed = 0
@@ -125,14 +125,14 @@ class Queue(object):
 		self._pending = set()
 		self._storage = collections.deque()
 
-	def dispatch(self, context:'.root.Context') -> 'Queue':
+	def extend(self, context:'.root.Context') -> typing.List[str]:
 		"""
-		# Dispatch the given &context into the queue.
+		# Extend the queue using the projects contained within &context.
 
 		# Returns any out-of-context requirements.
 		"""
 		if self._gs is not None:
-			raise Exception("project queue already dispatched context")
+			raise Exception("project queue already populated with a context")
 
 		projects, local = collect(context)
 		projects.sort()
@@ -196,7 +196,7 @@ class Queue(object):
 		"""
 		# Whether or not the queue has released all projects via &take.
 
-		# This can return &True prior to a final finish call.
+		# This can return &True prior to a final &finish call.
 		"""
 		return not bool(self._storage or self._status)
 
@@ -212,7 +212,7 @@ if __name__ == '__main__':
 	ctx.load()
 
 	q = Queue()
-	q.dispatch(ctx)
+	q.extend(ctx)
 	def _rprint(p):
 		for x in p:
 			print(x)
