@@ -170,7 +170,7 @@ class V1(types.Protocol):
 		for p in paths:
 			name, suffix = p.identifier.rsplit('.')
 			ftype, symbols = extmap.get(suffix, ('unknown', set()))
-			yield (name, ftype), (symbols, [p])
+			yield (name, ftype), (symbols, [p.container.delimit()/p.identifier])
 
 	def collect_sources(self, route:files.Path):
 		"""
