@@ -192,6 +192,14 @@ class Queue(object):
 		except IndexError:
 			pass
 
+	def interrupt(self):
+		"""
+		# Halt the queue causing &terminal to return &True and &take to return empty lists.
+		# The internal state will be discarded, but entries may still be finished.
+		"""
+		self._storage.clear()
+		self._status = None
+
 	def terminal(self) -> bool:
 		"""
 		# Whether or not the queue has released all projects via &take.
