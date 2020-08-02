@@ -5,6 +5,7 @@ import typing
 import collections
 import itertools
 
+from ..context.types import Cell
 from .. import routes
 from ..system import files
 
@@ -170,7 +171,7 @@ class V1(types.Protocol):
 		for p in paths:
 			name, suffix = p.identifier.rsplit('.')
 			ftype, symbols = extmap.get(suffix, ('unknown', set()))
-			yield (name, ftype), (symbols, [p.container.delimit()/p.identifier])
+			yield (name, ftype), (symbols, Cell(p.container.delimit()/p.identifier))
 
 	def collect_sources(self, route:files.Path):
 		"""
