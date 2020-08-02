@@ -115,7 +115,7 @@ class V1(types.Protocol):
 		if ifp.fs_type() == 'data':
 			return {
 				k: [
-					tuple(t[1].split('#', 1))
+					tuple(t[1].rsplit('/', 1))
 					if (t[0].split("/", 3)[:2]) == ['reference', 'hyperlink']
 					else tuple(map(str, absolute(t[1])))
 					for t in v
