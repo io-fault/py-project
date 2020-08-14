@@ -214,7 +214,8 @@ class V1(types.Protocol):
 				yield (cpath, data['type']), (data.get('symbols', set()), sources)
 
 				dirs = ()
-				files = r.fs_iterfiles('data')
+				# Filter factor.txt from possible factors.
+				files = [x for x in r.fs_iterfiles('data') if x != spec]
 			else:
 				dirs, files = r.fs_list('data')
 
