@@ -476,7 +476,7 @@ class Project(object):
 		xstr = str(fp)
 		for p in ~fp.container:
 			for i in self.select(p):
-				return (p, types.factor@xstr[len(str(p)) + 1:])
+				return (p, xstr[len(str(p)) + 1:])
 
 	def fullsplit(self, qpath:types.FactorPath):
 		"""
@@ -593,6 +593,29 @@ class Context(object):
 		for i, x in enumerate(self.product_sequence):
 			if x.route == product:
 				return i
+
+	def split(self, qpath:types.FactorPath):
+		"""
+		# Identify the product, project, and factor path of the given &qpath.
+		# Returns a triple identifying the &Product, &Project, and remaining &types.FactorPath.
+
+		# [ Parameters ]
+		# /qpath/
+			# The qualified factor path identifying an element, factor, or project.
+		"""
+		pd = None
+		for pd in self.product_sequence:
+			parts = pd.split(qpath)
+			if parts is not None:
+				break
+		else:
+			raise LookupError("no such project in context")
+
+		pj, fp = parts
+		iid = pd.identifier_by_factor(pj)
+		pj = self.project(iid[0])
+
+		return (pd, pj, fp)
 
 if __name__ == '__main__':
 	import sys
