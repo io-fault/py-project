@@ -464,19 +464,22 @@ class Project(object):
 		for fp, fd in self.protocol.iterfactors(self.route//factor):
 			yield ((factor//fp[0], fp[1]), fd)
 
-	def split(self, fp:types.FactorPath):
+	def split(self, fp:types.FactorPath, chain=itertools.chain):
 		"""
-		# Separate the factor path from the fragment path.
-		# Returns a pair of &types.FactorPath; the project and the factor.
+		# Separate the factor path from the element path.
+		# Returns a pair, &types.FactorPath and a &str; the project and the factor.
 		"""
-		for i in self.select(fp):
-			# Exact match.
-			return (fp, types.factor)
 
 		xstr = str(fp)
-		for p in ~fp.container:
-			for i in self.select(p):
-				return (p, xstr[len(str(p)) + 1:])
+		last = fp
+		for p in chain(~fp.container, (types.factor,)):
+			for ((f, t), srcdata) in self.select(p):
+				if f == last:
+					return (f, xstr[len(str(f)) + 1:])
+
+			last = p
+
+		return None
 
 	def fullsplit(self, qpath:types.FactorPath):
 		"""
