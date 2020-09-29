@@ -145,13 +145,12 @@ def _parse(source,
 	):
 	dx = Transform(dt)
 	fp = Parser()
-	g = dx.process(fp.parse(source))
-	return list(g)
+	return dx.process(fp.parse(source))
 
 def parse(text:str) -> typing.Tuple[object, object]:
 	try:
-		tree = list(_parse(text))
-		context, main = _context_data(tree[0][1])
+		tree = _parse(text)
+		context, main = _context_data(tree[1])
 		proto = context['protocol'][0][-1] # FORMAT: /protocol/ not found in CONTEXT admonition.
 		si = protocol[proto] # FORMAT: protocol not supported by fault.text.struct
 		struct = si(main.pop('dictionary'))
