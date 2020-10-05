@@ -1,5 +1,5 @@
 """
-# Project protocols.
+# Extensible project protocol for filesystem directories.
 """
 import typing
 import collections
