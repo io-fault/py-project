@@ -135,7 +135,6 @@ IDocumentation = typing.Mapping[(str,"'http://if.fault.io/text'")]
 FactorType = typing.Tuple[
 	FactorPath, # Project relative path.
 	typing.Tuple[
-		str, # Domain
 		str, # Type
 		typing.Set[str], # Symbols
 		typing.Iterable[routes.Selector], # Sources
