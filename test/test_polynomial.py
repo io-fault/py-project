@@ -3,7 +3,6 @@
 """
 import itertools
 
-from ... import routes
 from ...system import files
 
 from .. import types
