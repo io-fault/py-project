@@ -12,7 +12,7 @@
 import typing
 import functools
 
-from .. import routes
+from ..route.types import Segment, Selector
 from ..system import files
 
 from .types import *
@@ -56,19 +56,19 @@ def factorcontext(objects:tuple) -> FactorContextPaths:
 
 	return FactorContextPaths(*objects)
 
-def factorsegment(path:str) -> routes.Segment:
+def factorsegment(path:str) -> Segment:
 	"""
-	# Create a &routes.Segment using a "."-separated &path.
+	# Create a &Segment using a "."-separated &path.
 	"""
-	return routes.Segment.from_sequence(path.split('.'))
+	return Segment.from_sequence(path.split('.'))
 
-def projectfactor(fc:FactorContextPaths) -> routes.Segment:
+def projectfactor(fc:FactorContextPaths) -> Segment:
 	"""
 	# Create a Segment referring to the Project Factor identified by &fc.
 	"""
 	return fc.project.segment(fc.root)
 
-def identify_filesystem_context(route:routes.Selector) -> tuple:
+def identify_filesystem_context(route:Selector) -> tuple:
 	"""
 	# Identify the context paths of a file system route.
 
@@ -107,10 +107,10 @@ def identify_filesystem_context(route:routes.Selector) -> tuple:
 		root = current
 
 	ctx.reverse()
-	context = routes.Segment.from_sequence(ctx)
+	context = Segment.from_sequence(ctx)
 	return (root, context, project)
 
-def find(paths, factors:typing.Sequence[routes.Segment]):
+def find(paths, factors:typing.Sequence[Segment]):
 	"""
 	# Find the &factors in the &paths. Used to connect Factor paths to real files.
 	"""
@@ -170,7 +170,7 @@ def _expand(path):
 		if x.identifier not in ignored and '.' not in x.identifier
 	]
 
-def tree(path:routes.Selector, segment):
+def tree(path:Selector, segment):
 	"""
 	# Discover the projects in the tree identified by the &segment in &path.
 	# &path is normally a filesystem path and segment the relative path to
@@ -223,7 +223,7 @@ def information(fc:FactorContextPaths) -> Information:
 		info['contact'],
 	)
 
-def sources(root:files.Path, factor:routes.Segment) -> typing.Collection[files.Path]:
+def sources(root:files.Path, factor:Segment) -> typing.Collection[files.Path]:
 	"""
 	# Retrieve the set of &files.Path paths that may be
 	# the source for a factor relative to the given &root.
@@ -291,7 +291,7 @@ def infrastructure(fc:FactorContextPaths, filename="infrastructure.txt") -> ISym
 
 	return uinfra
 
-def integrals(project:routes.Selector, factor:routes.Segment, directory='__f-int__'):
+def integrals(project:Selector, factor:Segment, directory='__f-int__'):
 	"""
 	# Retrieve the set of integrals produced by the &factor contained by &project.
 	# A segment path is used to identify the factor in order to emphasize that

@@ -20,7 +20,7 @@
 import typing
 from dataclasses import dataclass
 
-from ..routes.types import Segment
+from ..route.types import Segment
 from ..system.files import Path
 
 ignored = {

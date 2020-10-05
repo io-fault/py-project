@@ -6,7 +6,7 @@ import collections
 import itertools
 
 from ..context.types import Cell
-from .. import routes
+from ..route.types import Segment, Selector
 from ..system import files
 
 from . import types
@@ -16,11 +16,11 @@ from . import struct
 default_image_segment = [['system', 'architecture'], ['intention']]
 
 # Segments noting the position of significant files in a polynomial project.
-ProjectSignal = routes.Segment.from_sequence(['project.txt'])
-SourceSignal = routes.Segment.from_sequence(['src'])
-FactorDefinitionSignal = routes.Segment.from_sequence(['factor.txt'])
+ProjectSignal = Segment.from_sequence(['project.txt'])
+SourceSignal = Segment.from_sequence(['src'])
+FactorDefinitionSignal = Segment.from_sequence(['factor.txt'])
 
-def load_project_information(file:routes.Selector):
+def load_project_information(file:Selector):
 	info = struct.parse(file.get_text_content())[1] #* ! CONTEXT: qualification required.
 
 	return types.Information(
@@ -32,7 +32,7 @@ def load_project_information(file:routes.Selector):
 		info['contact'],
 	)
 
-def factor_images(project:routes.Selector, factor:routes.Segment, directory='__f-int__'):
+def factor_images(project:Selector, factor:Segment, directory='__f-int__'):
 	"""
 	# Retrieve the set of images produced by the &factor contained by &project.
 	# A segment path is used to identify the factor in order to emphasize that
@@ -101,7 +101,7 @@ class V1(types.Protocol):
 		'part': 'partial',
 	}
 
-	def information(self, project:routes.Selector, filename="project.txt") -> types.Information:
+	def information(self, project:Selector, filename="project.txt") -> types.Information:
 		"""
 		# Retrieve the information record of the project.
 		"""
@@ -128,13 +128,13 @@ class V1(types.Protocol):
 			return {}
 
 	def image(self,
-			route:types.ProjectDirectory,
+			route:types.Path,
 			variants,
 			fp:types.FactorPath,
 			default='void',
 			groups=default_image_segment,
 			suffix='i'
-		) -> routes.Selector:
+		) -> Selector:
 		"""
 		# Retrieve the location of the factor's image for the given variants.
 		"""

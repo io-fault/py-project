@@ -17,7 +17,7 @@ import operator
 import itertools
 
 from ..context import tools
-from .. import routes
+from ..route.types import Selector, Segment
 from . import types
 
 def parse_project_index(lines:typing.Iterable[str]):
@@ -45,7 +45,7 @@ def parse_protocol_declaration(text:str):
 	return tuple(text.split())
 
 def scan_product_directory(
-		iscontext, read_protocol, route:routes.Selector,
+		iscontext, read_protocol, route:Selector,
 		roots:typing.Iterable[types.FactorPath]=(), limit=1024*4
 	):
 	"""
@@ -126,11 +126,11 @@ class Product(object):
 	"""
 	# Project set root providing access to contexts and projects.
 
-	# While often annotated as &routes.Selector, usually filesystem operation must be
+	# While often annotated as &Selector, usually filesystem operation must be
 	# supported by the selector.
 	"""
 
-	default_meta_directory = routes.Segment.from_sequence(['.product'])
+	default_meta_directory = Segment.from_sequence(['.product'])
 	protocol_declaration_filenames = [
 		'.factor-protocol',
 		'.protocol',
@@ -147,28 +147,28 @@ class Product(object):
 		return getattr(module, classname)
 
 	@property
-	def project_index_route(self, filename='PROJECTS') -> routes.Selector:
+	def project_index_route(self, filename='PROJECTS') -> Selector:
 		"""
 		# Materialized project index file path.
 		"""
 		return self.cache/filename
 
 	@property
-	def context_index_route(self, filename='CONTEXTS') -> routes.Selector:
+	def context_index_route(self, filename='CONTEXTS') -> Selector:
 		"""
 		# Materialized project index file path.
 		"""
 		return self.cache/filename
 
 	@property
-	def root_index_route(self, filename='ROOTS') -> routes.Selector:
+	def root_index_route(self, filename='ROOTS') -> Selector:
 		"""
 		# Materialized project index file path.
 		"""
 		return self.cache/filename
 
 	@property
-	def connections_index_route(self, filename='CONNECTIONS') -> routes.Selector:
+	def connections_index_route(self, filename='CONNECTIONS') -> Selector:
 		"""
 		# Connection list fulfilling requirements.
 		"""
@@ -190,7 +190,7 @@ class Product(object):
 		else:
 			return list(rpath@x for x in paths.split('\n') if x)
 
-	def __init__(self, route:routes.Selector, limit:int=1024*4, cache:routes.Selector=None):
+	def __init__(self, route:Selector, limit:int=1024*4, cache:Selector=None):
 		"""
 		# Initialize a &Product using &route with an empty local instance cache.
 
@@ -247,7 +247,7 @@ class Product(object):
 			# No match.
 			pass
 
-	def read_protocol(self, route:routes.Selector):
+	def read_protocol(self, route:Selector):
 		"""
 		# Retrieve the protocol data from the dot-protocol file
 		# contained in &route.
@@ -259,7 +259,7 @@ class Product(object):
 				return parse_protocol_declaration((route/x).get_text_content())
 		return None
 
-	def check_context_status(self, route:routes.Selector) -> bool:
+	def check_context_status(self, route:Selector) -> bool:
 		"""
 		# Determines whether the given route is a context (enclosure).
 		"""
@@ -538,7 +538,7 @@ class Context(object):
 		self.product_sequence = []
 		self.instance_cache = {}
 
-	def connect(self, route:routes.Selector) -> Product:
+	def connect(self, route:Selector) -> Product:
 		"""
 		# Add a new Product instance to the context.
 
@@ -618,7 +618,7 @@ class Context(object):
 				proto = self.import_protocol(proto_id)
 				self.instance_cache[key] = Project(pd, id, fp, proto({}))
 
-	def index(self, product:routes.Selector):
+	def index(self, product:Selector):
 		"""
 		# Find the index of the &Product whose route is equal to &product.
 		"""

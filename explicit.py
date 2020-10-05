@@ -13,15 +13,15 @@
 """
 import collections
 
-from .. import routes
+from ..route.types import Segment
 
 from . import types
 from . import struct
 
-ProjectSignal = routes.Segment.from_sequence(['project.txt'])
-ContextSignal = routes.Segment.from_sequence(['context', 'project.txt'])
-SourceSignal = routes.Segment.from_sequence(['src'])
-FactorDefinitionSignal = routes.Segment.from_sequence(['factor.txt'])
+ProjectSignal = Segment.from_sequence(['project.txt'])
+ContextSignal = Segment.from_sequence(['context', 'project.txt'])
+SourceSignal = Segment.from_sequence(['src'])
+FactorDefinitionSignal = Segment.from_sequence(['factor.txt'])
 
 def isource(route):
 	"""
@@ -67,7 +67,7 @@ def query(route, ignore=types.ignored):
 
 			srcdir = srcdir.delimit()
 			sources = srcdir.tree()[1] # Only interested in regular files.
-			cpath = routes.Segment.from_sequence(path)
+			cpath = Segment.from_sequence(path)
 			composites[cpath] = (data['domain'], data['type'], data.get('symbols', set()), sources)
 		else:
 			dirs, files = r.fs_list()
