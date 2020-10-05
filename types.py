@@ -1,5 +1,5 @@
 """
-# Factored Product Data structures.
+# Factored Projects data structures and types.
 
 # [ IReference ]
 # Python &str qualifying an object for use as a reference to a Target.
@@ -20,10 +20,8 @@
 import typing
 from dataclasses import dataclass
 
-from .. import routes
-
-ProjectDirectory = routes.Selector
-ProductDirectory = routes.Selector
+from ..routes.types import Segment
+from ..system.files import Path
 
 ignored = {
 	'__pycache__',
@@ -37,9 +35,9 @@ ignored = {
 	'.pijul',
 }
 
-class FactorPath(routes.Segment):
+class FactorPath(Segment):
 	"""
-	# A &routes.Segment identifying a factor.
+	# A &Segment identifying a factor.
 
 	# The path is always relative; usually relative to either a product or project.
 	# Identifiers in the path exclude any filename extensions.
@@ -87,9 +85,9 @@ class FactorContextPaths(object):
 		# The route identifying the project.
 	"""
 
-	root: (routes.Selector) = None
+	root: (Path) = None
 	context: (FactorPath) = None
-	project: (routes.Selector) = None
+	project: (Path) = None
 
 	@property
 	def enclosure(self) -> bool:
@@ -137,7 +135,7 @@ FactorType = typing.Tuple[
 	typing.Tuple[
 		str, # Type
 		typing.Set[str], # Symbols
-		typing.Iterable[routes.Selector], # Sources
+		typing.Iterable[Path], # Sources
 	]
 ]
 
@@ -148,13 +146,13 @@ class Protocol(object):
 	def __init__(self, parameters:dict):
 		self.parameters = parameters
 
-	def infrastructure(self, absolute, route:ProjectDirectory) -> ISymbols:
+	def infrastructure(self, absolute, route:Path) -> ISymbols:
 		return {}
 
-	def information(self, route:ProjectDirectory) -> Information:
+	def information(self, route:Path) -> Information:
 		raise NotImplementedError("core protocol method must be implemented by subclass")
 
-	def iterfactors(self, route:ProjectDirectory) -> typing.Iterable[FactorType]:
+	def iterfactors(self, route:Path) -> typing.Iterable[FactorType]:
 		raise NotImplementedError("core protocol method must be implemented by subclass")
 
 class ProtocolViolation(Exception):
