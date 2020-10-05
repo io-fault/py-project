@@ -7,6 +7,9 @@
 # product directory's index, the (filename)`.product` directory.
 
 # Even in the case of single product directories, a Context should be used to access the projects.
+# The primary function of a &Product instance is to merely provide access to the data stored in the index,
+# not as a general purpose abstraction for interacting with the product directory as that function usually
+# involves multiple directories, an abstraction provided by &Context.
 """
 import typing
 import collections
@@ -170,6 +173,22 @@ class Product(object):
 		# Connection list fulfilling requirements.
 		"""
 		return self.cache/filename
+
+	@property
+	def connections(self):
+		"""
+		# The requirements of the product as a sequence of product directory routes.
+
+		# This sequence is not cached and constructed at access time by opening the
+		# file &connections_index_route.
+		"""
+		rpath = self.route.container
+		try:
+			paths = self.connections_index_route.get_text_content()
+		except FileNotFoundError:
+			return []
+		else:
+			return list(rpath@x for x in paths.split('\n') if x)
 
 	def __init__(self, route:routes.Selector, limit:int=1024*4, cache:routes.Selector=None):
 		"""
@@ -504,6 +523,16 @@ class Context(object):
 		import importlib
 		module = importlib.import_module(module_name)
 		return getattr(module, classname)
+
+	@classmethod
+	def from_product_connections(Class, pd:Product):
+		"""
+		# Create a &Context initializing it with the immediate connections identified by &pd.
+		"""
+		i = Class()
+		for pdr in pd.connections:
+			i.connect(pdr)
+		return i
 
 	def __init__(self):
 		self.product_sequence = []
