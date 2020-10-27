@@ -441,6 +441,20 @@ class Project(object):
 	def infrastructure(self):
 		return self.protocol.infrastructure(self.absolute, self.route)
 
+	@tools.cachedproperty
+	def canonical(self) -> types.FactorPath:
+		pd = self.product
+		path = []
+		for fpath in reversed(list(self.itercontexts())):
+			pj_route = pd.route // fpath
+			iid, Proto = pd.identifier_by_factor(fpath)
+			p = Proto({})
+			ctxname = p.information(pj_route).name
+			path.append(ctxname)
+
+		path.append(self.information.name)
+		return types.FactorPath.from_sequence(path)
+
 	def image(self, variants, fp:types.FactorPath, suffix='i'):
 		return self.protocol.image(self.route, variants, fp, suffix=suffix)
 	integral = image
