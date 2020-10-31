@@ -104,10 +104,31 @@ def infras(data):
 
 	rd = {}
 	for k, v in main:
-		if v[0] in {'set', 'sequence'}:
-			rd[k] = set(document.export(x[1][0][1]).sole for x in v[1]) # One fragment in item
-		else:
-			rd[k] = document.export(v[1])
+		if v[0] not in {'set', 'sequence'}:
+			continue
+
+		s = rd[k] = set()
+		for x in v[1]:
+			frag = document.export(x[1][0][1]).sole
+			tpath = frag.typepath
+			method = None
+
+			if tpath[0] != 'reference':
+				raise Exception("symbol entry is not a reference")
+
+			if tpath[1] == 'hyperlink':
+				typ = 'absolute'
+			elif tpath[1] == 'ambiguous':
+				typ = 'relative'
+			else:
+				raise Exception("symbol entries must be hyperlinks or relatives")
+
+			try:
+				method = tpath[2]
+			except IndexError:
+				pass
+
+			s.add((typ, method, frag.data))
 
 	return rd
 

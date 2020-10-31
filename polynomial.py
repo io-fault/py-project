@@ -116,9 +116,13 @@ class V1(types.Protocol):
 		if ifp.fs_type() == 'data':
 			return {
 				k: [
-					tuple(t[1].rsplit('/', 1))
-					if (t[0].split("/", 3)[:2]) == ['reference', 'hyperlink']
-					else tuple(map(str, absolute(t[1])))
+					# Combine source with identified project and factor.
+					# (method, project, factor)
+					(t[1],) + (
+						tuple(t[2].rsplit('/', 1))
+						if t[0] == 'absolute'
+						else tuple(map(str, absolute(t[2])))
+					)
 					for t in v
 				]
 				for k, v in struct.parse(ifp.get_text_content())[1].items()
