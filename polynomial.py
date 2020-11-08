@@ -113,8 +113,11 @@ class V1(types.Protocol):
 		"""
 		ifp = (route/filename)
 
-		if ifp.fs_type() == 'data':
-			return {
+		if ifp.fs_type() != 'data':
+			# No infrastructure symbols.
+			sym = {}
+		else:
+			sym = {
 				k: [
 					# Combine source with identified project and factor.
 					# (method, project, factor)
@@ -128,8 +131,49 @@ class V1(types.Protocol):
 				for k, v in struct.parse(ifp.get_text_content())[1].items()
 				if not isinstance(v, struct.Paragraph)
 			}
-		else:
-			return {}
+
+		return sym
+
+	def inherit(self, context, infrastructure):
+		"""
+		# Inherit information and configuration from a context project.
+		"""
+
+		if 'source-extension-map' not in self.parameters:
+			self.parameters['source-extension-map'] = {}
+
+		extmap = []
+		try:
+			extmap.extend(context.parameters['source-extension-map'].items())
+		except Exception:
+			# Ignore most errors here.
+			# Resetting extmap for safety may be appropriate, but it is not clear.
+			pass
+
+		extmap.extend(self.parameters['source-extension-map'].items())
+		self.parameters['source-extension-map'] = dict(extmap)
+
+		extmap = self.parameters['source-extension-map']
+		for k, symfactors in infrastructure:
+			kstr = k.strip()
+			if kstr[:2] != '*.':
+				# Symbol is not a suffix pattern.
+				continue
+
+			type_reqs = set()
+
+			for method, project_url, factor_path in symfactors:
+				if method != 'type':
+					# Factor is not recognized as a type.
+					continue
+
+				try:
+					factor_type, source_type = factor_path.split('#', 2)
+				except ValueError:
+					factor_type = factor_path
+					source_type = None # unspecified
+
+				extmap[kstr[2:]] = (source_type, project_url, factor_type, {kstr})
 
 	def image(self,
 			route:types.Path,
@@ -174,7 +218,7 @@ class V1(types.Protocol):
 
 		for p in paths:
 			name, suffix = p.identifier.rsplit('.')
-			ftype, symbols = extmap.get(suffix, ('unknown', set()))
+			stype, pj_url, ftype, symbols = extmap.get(suffix, (None, 'http://if.fault.io/factors/', 'unknown', set()))
 			yield (name, ftype), (symbols, Cell(p.container.delimit()/p.identifier))
 
 	def collect_sources(self, route:files.Path):
@@ -190,14 +234,15 @@ class V1(types.Protocol):
 			if not y.identifier.startswith('.')
 		)
 
-	def iterfactors(self, route:files.Path, ignore=types.ignored) -> typing.Iterable[types.FactorType]:
+	def iterfactors(self, route:files.Path, rpath:types.FactorPath, ignore=types.ignored) -> typing.Iterable[types.FactorType]:
 		"""
-		# Query the &route for factors.
+		# Query the project &route for factor compositions contained within &rpath.
 		"""
 
-		name = route.identifier
+		froute = route // rpath
+		name = rpath.identifier
 		path = ()
-		cur = collections.deque([(route, path)])
+		cur = collections.deque([(froute, path)])
 
 		while cur:
 			r, path = cur.popleft()

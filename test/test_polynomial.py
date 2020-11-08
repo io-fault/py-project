@@ -9,8 +9,8 @@ from .. import types
 from .. import polynomial as module
 
 extmap = {
-	'py': ('python-module', set()),
-	'txt': ('chapter', set()),
+	'py': ('v3', 'http://if.fault.io/factors', 'python-module', set()),
+	'txt': ('kleptic', 'http://if.fault.io/factors', 'chapter', set()),
 }
 
 def mkfactor(ftype, symbols):
@@ -59,7 +59,7 @@ def test_V1_iterfactors_whole(test):
 	pt = (td/'project.txt').fs_init()
 	py = (td/'test.py').fs_init()
 
-	idx = dict(p.iterfactors(td))
+	idx = dict(p.iterfactors(td, types.factor))
 	test/len(idx) == 3
 	sources = list(itertools.chain(*[x[-1] for x in idx.values()]))
 
@@ -77,7 +77,7 @@ def test_V1_iterfactors_composite(test):
 	ft = (td/'cf'/'factor.txt').fs_init(mkfactor('executable', set()).encode('utf-8'))
 
 	v = (td/'cf'/'src'/'valid.c').fs_init()
-	fs = dict(p.iterfactors(td))
+	fs = dict(p.iterfactors(td, types.factor))
 
 	cf = types.FactorPath.from_sequence(['cf'])
 	fls = list(fs[(cf, 'executable')][-1])
@@ -92,7 +92,7 @@ def test_V1_iterfactors_implied_composite(test):
 		d = (td/it).fs_mkdir()
 
 		v = (d/('cf.'+it)/'valid.c').fs_init()
-		fs = dict(p.iterfactors(d))
+		fs = dict(p.iterfactors(td, types.factor@it))
 
 		cf = types.FactorPath.from_sequence(['cf'])
 		fls = list(fs[(cf, p.implicit_types[it])][-1])

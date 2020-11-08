@@ -503,7 +503,7 @@ class Project(object):
 		"""
 		# Retrieve factors within the given path.
 		"""
-		for fp, fd in self.protocol.iterfactors(self.route//factor):
+		for fp, fd in self.protocol.iterfactors(self.route, factor):
 			yield ((factor//fp[0], fp[1]), fd)
 
 	def split(self, fp:types.FactorPath, chain=itertools.chain):
@@ -640,6 +640,39 @@ class Context(object):
 				key = ('project', id)
 				proto = self.import_protocol(proto_id)
 				self.instance_cache[key] = Project(pd, id, fp, proto({}))
+
+	def configure(self):
+		"""
+		# Traverse the cached projects and apply protocol inheritance.
+		"""
+
+		# Get all the Context Projects in the Environment Context.
+		ctxlist = list()
+		for pd in reversed(self.product_sequence):
+			for ctxname in pd.contexts:
+				ctxlist.append(ctxname)
+		ctxlist.sort(key=(lambda k: str(k).count('.')))
+
+		# Sorted by the context's path depth, inherit the leading contexts and descend.
+		for ctxname in ctxlist:
+			pd, pj, ff = self.split(str(ctxname/'context'/'factor-placeholder'))
+
+			for ascending in self.itercontexts(pj):
+				ctxproto = ascending.protocol
+				break
+			else:
+				ctxproto = None
+
+			pj.protocol.inherit(ctxproto, pj.infrastructure.items())
+
+		# Inherit protocol data.
+		for pj in (v for k, v in self.instance_cache.items() if k[0] == 'project'):
+			for ctx in self.itercontexts(pj):
+				ctxproto = ctx.protocol
+				break
+			else:
+				ctxproto = None
+			pj.protocol.inherit(ctxproto, pj.infrastructure.items())
 
 	def index(self, product:Selector):
 		"""
