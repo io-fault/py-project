@@ -332,7 +332,7 @@ class Product(object):
 	def update(self):
 		"""
 		# Update the snapshot of the projects and contexts by querying
-		# the route's hierarchy. The effects of this should be recorded with
+		# the filesystem. The effects of this should be recorded with
 		# a subsequent call to &store.
 		"""
 		slots = {
@@ -406,15 +406,15 @@ class Product(object):
 				else:
 					yield p + (d,)
 
-	def split(self, fp:types.FactorPath):
+	def split(self, fpath:types.FactorPath):
 		"""
-		# Separate the project portion from &fp.
+		# Separate the project portion from &fpath.
 		# Returns a pair of &types.FactorPath; the project and the factor.
 		"""
-		if fp in self.local:
-			return (fp, types.factor)
+		if fpath in self.local:
+			return (fpath, types.factor)
 
-		suffix = str(fp)
+		suffix = str(fpath)
 		for x in self.local:
 			xstr = str(x)
 			if suffix.startswith(xstr + '.'):
@@ -435,14 +435,23 @@ class Project(object):
 
 	@tools.cachedproperty
 	def information(self) -> types.Information:
+		"""
+		# The identifying information of the project.
+		"""
 		return self.protocol.information(self.route)
 
 	@tools.cachedproperty
 	def infrastructure(self):
+		"""
+		# The infrastructure symbols identifying the requirements of the project.
+		"""
 		return self.protocol.infrastructure(self.absolute, self.route)
 
 	@tools.cachedproperty
 	def canonical(self) -> types.FactorPath:
+		"""
+		# The canonical factor path that is used to refer to the project.
+		"""
 		pd = self.product
 		path = []
 		for fpath in reversed(list(self.itercontexts())):
