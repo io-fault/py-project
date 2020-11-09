@@ -581,24 +581,13 @@ class Context(object):
 
 	def project(self, id:str) -> Project:
 		"""
-		# Retrieve a &Project instance from the context.
-		# If no project is present in the instance cache, scan the
-		# connected products for a match.
+		# Retrieve a &Project instance from the context's instance cache.
+
+		# [ Exceptions ]
+		# /&LookupError/
+			# No project with the given identifier has been loadded in the context.
 		"""
-		key = ('project', id)
-		if key in self.instance_cache:
-			return self.instance_cache[key]
-
-		for pd in self.product_sequence:
-			if id not in pd.projects:
-				continue
-
-			fp, proto_id = pd.projects[id]
-			proto = self.import_protocol(proto_id)
-			pj = Project(pd, id, fp, proto({}))
-
-		self.instance_cache[key] = pj
-		return pj
+		return self.instance_cache[('project', id)]
 
 	def itercontexts(self, pj:Project) -> typing.Iterable[Project]:
 		"""

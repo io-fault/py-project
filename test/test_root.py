@@ -320,6 +320,7 @@ def test_Context_project(test):
 	ctx = module.Context()
 
 	ctx_pd = ctx.connect(pd.route)
+	ctx.load()
 	test.isinstance(ctx.project(t_project_id + '/alt-1'), module.Project)
 	test.isinstance(ctx.project(t_project_id + '/alt-2'), module.Project)
 
@@ -352,6 +353,7 @@ def test_Context_itercontexts(test):
 	pd.store()
 	ctx = module.Context()
 	pd = ctx.connect(pd.route)
+	ctx.load()
 
 	id = t_project_id + '/alt-1'
 	pj = ctx.project(id)
