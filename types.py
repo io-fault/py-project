@@ -109,20 +109,32 @@ class FactorContextPaths(object):
 @dataclass
 class Information(object):
 	"""
-	# Project information structure usually extracted from (filename)`project.txt`
-	# files.
+	# Project information structure usually extracted from (filename)`project.txt` files.
+
+	# [ Properties ]
+	# /identifier/
+		# A hyperlink or literal attempting to provide a unique string that can identify the project.
+	# /name/
+		# The canonical local name for the project. Often, this will be the directory name used when
+		# the software is installed into the given system.
+	# /icon/
+		# A property set defining visual symbols that can be used to identify the project.
+	# /abstract/
+		# A sequence of paragraphs describing the project.
+		# The first sentence of the first paragraph may be used in isolation in project lists.
+	# /authority/
+		# An arbitrary string intended to identify the entity that controls the project.
+	# /contact/
+		# A string that identifies the appropriate means of contacting the authority
+		# regarding the project.
 	"""
 
-	identifier: (typing.Text) = None
-	name: (typing.Text) = None
-	icon: (typing.Mapping) = None
+	identifier: (str) = None
+	name: (str) = None
+	icon: (dict) = None
 	abstract: (object) = None
 	authority: (str) = None
 	contact: (str) = None
-
-	@property
-	def controller(self):
-		return self.authority
 
 IReference = typing.NewType('IReference', str)
 IReference.__qualname__ = __name__ + '.IReference'
