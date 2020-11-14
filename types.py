@@ -136,6 +136,37 @@ class Information(object):
 	authority: (str) = None
 	contact: (str) = None
 
+@dataclass
+class Reference(object):
+	"""
+	# A position independent reference to a required factor and the interpretation parameters
+	# needed to properly form the relationship when integrating products.
+
+	# &project and &factor are the only required fields.
+
+	# [ Properties ]
+	# /project/
+		# The identifier of the project that contains the required factor.
+	# /factor/
+		# The project relative path to the required factor.
+	# /method/
+		# The type of connection that is expected to be formed between the requirement
+		# and the target factor being integrated.
+	# /isolation/
+		# The specifier of a format, variant, or factor type.
+
+		# For `type` methods, this is usually a reference to a language identifier.
+		# For `control`, it can be the specification of a feature's variant.
+
+		# When referring to normal requirements, this is always the factor type that should
+		# be used when integration is performed.
+	"""
+
+	project: (str)
+	factor: (FactorPath)
+	method: (str) = None
+	isolation: (str) = None
+
 IReference = typing.NewType('IReference', str)
 IReference.__qualname__ = __name__ + '.IReference'
 ISymbols = typing.Mapping[(typing.Text,typing.Collection[IReference])]
