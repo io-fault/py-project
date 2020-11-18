@@ -1,18 +1,11 @@
 """
 # Factored Projects data structures and types.
 
-# [ IReference ]
-# Python &str qualifying an object for use as a reference to a Target.
-
 # [ ISymbols ]
 # The effective contents of an (filename)`infrastructure.txt` factor.
 # This is a mapping defining Infrastructure Symbols to abstract references.
 # The absract references are [data] typed strings that are intended to
 # be interpreted by whatever context is processing or reading them.
-
-# [ IDocumentation ]
-# The paragraph contents of an (filename)`infrastructure.txt` factor.
-# Symbols containing documentation
 
 # [ FactorType ]
 # Annotation signature for factor data produced by project protocols.
@@ -140,7 +133,7 @@ class Information(object):
 class Reference(object):
 	"""
 	# A position independent reference to a required factor and the interpretation parameters
-	# needed to properly form the relationship when integrating products.
+	# needed to properly form the relationship for integration.
 
 	# &project and &factor are the only required fields.
 
@@ -167,11 +160,7 @@ class Reference(object):
 	method: (str) = None
 	isolation: (str) = None
 
-IReference = typing.NewType('IReference', str)
-IReference.__qualname__ = __name__ + '.IReference'
-ISymbols = typing.Mapping[(typing.Text,typing.Collection[IReference])]
-
-IDocumentation = typing.Mapping[(str,"'http://if.fault.io/text'")]
+ISymbols = typing.Mapping[(str, typing.Collection[Reference])]
 
 FactorType = typing.Tuple[
 	FactorPath, # Project relative path.

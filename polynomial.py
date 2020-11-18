@@ -107,30 +107,41 @@ class V1(types.Protocol):
 		"""
 		return load_project_information(project / filename)
 
-	def infrastructure(self, absolute, route, filename="infrastructure.txt") -> types.ISymbols:
+	def infrastructure(self, absolute, route,
+			filename="infrastructure.txt",
+			Reference=types.Reference,
+		) -> types.ISymbols:
 		"""
 		# Extract and interpret infrastructure symbols used to expresss abstract requirements.
 		"""
 		ifp = (route/filename)
+		sym = {}
 
 		if ifp.fs_type() != 'data':
-			# No infrastructure symbols.
-			sym = {}
-		else:
-			sym = {
-				k: [
-					# Combine source with identified project and factor.
-					# (method, project, factor)
-					(t[1],) + (
-						tuple(t[2].rsplit('/', 1))
-						if t[0] == 'absolute'
-						else tuple(map(str, absolute(t[2])))
-					)
-					for t in v
-				]
-				for k, v in struct.parse(ifp.get_text_content())[1].items()
-				if not isinstance(v, struct.Paragraph)
-			}
+			return sym
+
+		for k, refs in struct.parse(ifp.get_text_content())[1].items():
+			if isinstance(refs, struct.Paragraph):
+				# Symbol documentation.
+				continue
+
+			sym[k] = list()
+			for typ, method, refdata in refs:
+				# Combine source with identified project and factor.
+				# (method, project, factor)
+				iso = None
+
+				if typ == 'absolute':
+					project, factor = refdata.rsplit('/', 1)
+					if '#' in factor:
+						factor, iso = factor.rsplit('#', 1)
+
+					sym[k].append(Reference(project, factor, method, iso))
+				elif typ == 'relative':
+					project, factor = tuple(map(str, absolute(refdata)))
+					sym[k].append(Reference(project, factor, None, None))
+				else:
+					raise Exception("unrecognized reference type, expecting absolute or relative")
 
 		return sym
 
@@ -154,7 +165,7 @@ class V1(types.Protocol):
 		self.parameters['source-extension-map'] = dict(extmap)
 
 		extmap = self.parameters['source-extension-map']
-		for k, symfactors in infrastructure:
+		for k, symrefs in infrastructure:
 			kstr = k.strip()
 			if kstr[:2] != '*.':
 				# Symbol is not a suffix pattern.
@@ -162,18 +173,12 @@ class V1(types.Protocol):
 
 			type_reqs = set()
 
-			for method, project_url, factor_path in symfactors:
-				if method != 'type':
+			for ref in symrefs:
+				if ref.method != 'type':
 					# Factor is not recognized as a type.
 					continue
 
-				try:
-					factor_type, source_type = factor_path.split('#', 2)
-				except ValueError:
-					factor_type = factor_path
-					source_type = None # unspecified
-
-				extmap[kstr[2:]] = (source_type, project_url, factor_type, {kstr})
+				extmap[kstr[2:]] = (ref.isolation, ref.project, ref.factor, {kstr})
 
 	def image(self,
 			route:types.Path,
@@ -214,11 +219,12 @@ class V1(types.Protocol):
 		# domain and type using the (id)`source-extension-map` parameter and
 		# the file's dot-extension.
 		"""
+		default = (None, 'http://if.fault.io/factors/', 'unknown', set())
 		extmap = self.parameters.get('source-extension-map', _nomap)
 
 		for p in paths:
 			name, suffix = p.identifier.rsplit('.')
-			stype, pj_url, ftype, symbols = extmap.get(suffix, (None, 'http://if.fault.io/factors/', 'unknown', set()))
+			stype, pj_url, ftype, symbols = extmap.get(suffix, default)
 			yield (name, ftype), (symbols, Cell(p.container.delimit()/p.identifier))
 
 	def collect_sources(self, route:files.Path):
@@ -254,7 +260,7 @@ class V1(types.Protocol):
 			spec = r//FactorDefinitionSignal
 
 			if srcdir.fs_type() == 'directory' and spec.fs_type() == 'data':
-				# Explicit composite.
+				# Explicit Typed Factor directory.
 				spec_ctx, data = struct.parse(spec.get_text_content())
 
 				sources = self.collect_sources(srcdir)
@@ -266,11 +272,14 @@ class V1(types.Protocol):
 				# Filter factor.txt and abstract.txt from possible factors.
 				files = [x for x in r.fs_iterfiles('data') if x.identifier not in {'factor.txt', 'abstract.txt'}]
 			else:
+				# Not an Explicitly Typed Factor directory.
 				dirs, files = r.fs_list('data')
 
+			# Recognize Indirectly Typed Factors.
 			for (name, ftype), fstruct in self.factor_structs([x for x in files if self.isource(x)]):
 				yield ((segment/name), ftype), fstruct
 
+			# Factor Index.
 			for x in dirs:
 				if x.identifier in ignore:
 					continue
