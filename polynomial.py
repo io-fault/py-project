@@ -136,9 +136,9 @@ class V1(types.Protocol):
 					if '#' in factor:
 						factor, iso = factor.rsplit('#', 1)
 
-					sym[k].append(Reference(project, factor, method, iso))
+					sym[k].append(Reference(project, types.factor@factor, method, iso))
 				elif typ == 'relative':
-					project, factor = tuple(map(str, absolute(refdata)))
+					project, factor = absolute(refdata)
 					sym[k].append(Reference(project, factor, None, None))
 				else:
 					raise Exception("unrecognized reference type, expecting absolute or relative")
