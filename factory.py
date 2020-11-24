@@ -295,7 +295,8 @@ def materialize(route, plans, encoding='utf-8', isinstance=isinstance):
 			data = files.Path.from_absolute(data.__file__).fs_load()
 		else:
 			# Presume filesystem reference.
-			data = data.fs_load()
+			(target_file).fs_link_relative(data) # Symbolic linke.
+			continue
 
 		(target_file).fs_init(data)
 

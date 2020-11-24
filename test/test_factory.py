@@ -176,15 +176,16 @@ def test_materialize_mkdir(test):
 	module.materialize(d, [(S(['test-mkdir']), None)])
 	test/(d/'test-mkdir').fs_type() == 'directory'
 
-def test_materialize_clone(test):
+def test_materialize_link(test):
 	"""
 	# - &module.materialize
 	"""
 	d = test.exits.enter_context(files.Path.fs_tmpdir())
 	src = (d/'source').fs_init(b'source-data')
 
-	module.materialize(d, [(S(['test-file-copy']), src)])
-	test/(d/'test-file-copy').fs_load() == src.fs_load()
+	module.materialize(d, [(S(['test-file-link']), src)])
+	test/(d/'test-file-link').fs_load() == src.fs_load()
+	test/list((d/'test-file-link').fs_follow_links())[-1] == src
 
 def test_materialize_module(test):
 	"""
