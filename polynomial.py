@@ -287,17 +287,8 @@ class V1(types.Protocol):
 				if '.' not in x.identifier:
 					cur.append((x, path + (x.identifier,)))
 				else:
-					# Implicit composite: .exe, .lib, .ext
-					factor_id, factor_type = x.identifier.rsplit('.', 1)
-					itype = self.implicit_types.get(factor_type)
+					pass
 
-					if itype:
-						cpath = types.FactorPath.from_sequence(path+(factor_id,))
-						sources = self.collect_sources(x)
-						yield (cpath, itype), (set(), sources)
-					else:
-						# No a recognized implicit type.
-						pass
 			del dirs, files
 
 if __name__ == '__main__':

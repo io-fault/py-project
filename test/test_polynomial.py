@@ -84,21 +84,6 @@ def test_V1_iterfactors_composite(test):
 	test/len(fls) == 1
 	v in test/fls
 
-def test_V1_iterfactors_implied_composite(test):
-	td = test.exits.enter_context(files.Path.fs_tmpdir())
-	p = module.V1({'source-extension-map': extmap})
-
-	for it in p.implicit_types:
-		d = (td/it).fs_mkdir()
-
-		v = (d/('cf.'+it)/'valid.c').fs_init()
-		fs = dict(p.iterfactors(td, types.factor@it))
-
-		cf = types.FactorPath.from_sequence(['cf'])
-		fls = list(fs[(cf, p.implicit_types[it])][-1])
-		test/len(fls) == 1
-		v in test/fls
-
 def test_V1_information(test):
 	"""
 	# - &module.V1.information
