@@ -129,7 +129,7 @@ class Information(object):
 	authority: (str) = None
 	contact: (str) = None
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class Reference(object):
 	"""
 	# A position independent reference to a required factor and the interpretation parameters
