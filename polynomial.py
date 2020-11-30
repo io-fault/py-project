@@ -4,6 +4,7 @@
 import typing
 import collections
 import itertools
+import functools
 
 from ..context.types import Cell
 from ..route.types import Segment, Selector
@@ -14,6 +15,14 @@ from . import struct
 
 # Directory Structure of Integrals
 default_image_segment = [['system', 'architecture'], ['intention']]
+unknown_factor_type = types.Reference(
+	'http://if.fault.io/factors', types.factor@'unknown',
+	'type', None
+)
+image_factor_type = types.Reference(
+	'http://if.fault.io/factors', types.factor@'image',
+	'type', None
+)
 
 # Segments noting the position of significant files in a polynomial project.
 ProjectSignal = Segment.from_sequence(['project.txt'])
@@ -171,19 +180,17 @@ class V1(types.Protocol):
 				# Symbol is not a suffix pattern.
 				continue
 
-			type_reqs = set()
-
+			# Identify the factor type with the `type` method.
 			for ref in symrefs:
-				if ref.method != 'type':
+				if ref.method == 'type':
 					# Factor is not recognized as a type.
-					continue
+					extmap[kstr[2:]] = (ref, {kstr})
+					break
+			else:
+				# No 'type' requirement provided by format symbol.
+				pass
 
-				extmap[kstr[2:]] = (ref.isolation, ref.project, ref.factor, {kstr})
-
-	def image(self,
-			route:types.Path,
-			variants,
-			fp:types.FactorPath,
+	def image(self, route:types.Path, variants, fp:types.FactorPath, *,
 			default='void',
 			groups=default_image_segment,
 			suffix='i'
@@ -213,34 +220,55 @@ class V1(types.Protocol):
 
 		return True
 
-	def factor_structs(self, paths:typing.Iterable[files.Path], _nomap={}):
+	def source_format_resolution(self):
 		"""
-		# Given an iterable of paths identifying whole factors, resolve their
-		# domain and type using the (id)`source-extension-map` parameter and
-		# the file's dot-extension.
+		# Construct a resolution (type) cache for the source extension map.
 		"""
-		default = (None, 'http://if.fault.io/factors/', 'unknown', set())
-		extmap = self.parameters.get('source-extension-map', _nomap)
+
+		try:
+			mapping = self.parameters['source-extension-map']
+		except KeyError:
+			# No map available.
+			return (lambda x: (unknown_factor_type, set()))
+		else:
+			return functools.lru_cache(16)(lambda x: mapping.get(x, (unknown_factor_type, set())))
+
+	def indirect_factor_records(self, typcache, paths:typing.Iterable[files.Path],
+			*, _nomap={}, _default=(unknown_factor_type, set()),
+		):
+		"""
+		# Given an iterable of paths identifying Indirectly Typed Factors, resolve their
+		# type reference, factor type, and symbols using the given &typcache.
+		"""
 
 		for p in paths:
-			name, suffix = p.identifier.rsplit('.')
-			stype, pj_url, ftype, symbols = extmap.get(suffix, default)
-			yield (name, ftype), (symbols, Cell(p.container.delimit()/p.identifier))
+			# Normalize path; the delimited partition may be used by callers.
+			src = p.container.delimit() / p.identifier
 
-	def collect_sources(self, route:files.Path):
+			name, suffix = src.identifier.split('.')
+			ref, symbols = typcache(suffix)
+			yield (name, str(ref.factor)), (symbols, Cell((ref, src)))
+
+	def collect_explicit_sources(self, typcache, route:files.Path):
 		"""
-		# Collect source files for a composite.
+		# Collect source files paired with their type reference for an
+		# Explicitly Typed Factor record.
 		"""
-		return (
-			y for y in
-			itertools.chain.from_iterable(
-				x[1] for x in route.delimit().fs_index('data')
-				if not x[0].identifier.startswith('.')
-			)
-			if not y.identifier.startswith('.')
+
+		# Excluding dot-directories.
+		files = (
+			x[1] for x in route.delimit().fs_index('data')
+			if not x[0].identifier.startswith('.')
 		)
 
-	def iterfactors(self, route:files.Path, rpath:types.FactorPath, ignore=types.ignored) -> typing.Iterable[types.FactorType]:
+		# Excluding dot-files.
+		for y in itertools.chain.from_iterable(files):
+			if not y.identifier.startswith('.'):
+				yield (typcache(y.extension)[0], y)
+
+	def iterfactors(self, route:files.Path, rpath:types.FactorPath,
+			*, ignore=types.ignored
+		) -> typing.Iterable[types.FactorType]:
 		"""
 		# Query the project &route for factor compositions contained within &rpath.
 		"""
@@ -249,6 +277,7 @@ class V1(types.Protocol):
 		name = rpath.identifier
 		path = ()
 		cur = collections.deque([(froute, path)])
+		typcache = self.source_format_resolution()
 
 		while cur:
 			r, path = cur.popleft()
@@ -263,7 +292,7 @@ class V1(types.Protocol):
 				# Explicit Typed Factor directory.
 				spec_ctx, data = struct.parse(spec.get_text_content())
 
-				sources = self.collect_sources(srcdir)
+				sources = self.collect_explicit_sources(typcache, srcdir)
 				cpath = types.FactorPath.from_sequence(path)
 
 				yield (cpath, data['type']), (data.get('symbols', set()), sources)
@@ -276,7 +305,7 @@ class V1(types.Protocol):
 				dirs, files = r.fs_list('data')
 
 			# Recognize Indirectly Typed Factors.
-			for (name, ftype), fstruct in self.factor_structs([x for x in files if self.isource(x)]):
+			for (name, ftype), fstruct in self.indirect_factor_records(typcache, [x for x in files if self.isource(x)]):
 				yield ((segment/name), ftype), fstruct
 
 			# Factor Index.

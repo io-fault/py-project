@@ -167,7 +167,7 @@ FactorType = typing.Tuple[
 	typing.Tuple[
 		str, # Type
 		typing.Set[str], # Symbols
-		typing.Iterable[Path], # Sources
+		typing.Iterable[typing.Tuple[Reference, Path]], # Format References and Sources
 	]
 ]
 

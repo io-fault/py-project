@@ -8,9 +8,23 @@ from ...system import files
 from .. import types
 from .. import polynomial as module
 
+python_factor_typref = types.Reference(
+	'http://if.fault.io/factors',
+	types.factor@'python-module',
+	'type',
+	'v3',
+)
+
+text_factor_typref = types.Reference(
+	'http://if.fault.io/factors',
+	types.factor@'chapter',
+	'type',
+	'kleptic',
+)
+
 extmap = {
-	'py': ('v3', 'http://if.fault.io/factors', 'python-module', set()),
-	'txt': ('kleptic', 'http://if.fault.io/factors', 'chapter', set()),
+	'py': (python_factor_typref, set()),
+	'txt': (text_factor_typref, set()),
 }
 
 def mkfactor(ftype, symbols):
@@ -40,18 +54,20 @@ def test_V1_isource(test):
 	dotfile = (td/'.filename').fs_init()
 	test/p.isource(dotfile) == False
 
-def test_V1_collect_sources(test):
+def test_V1_collect_explicit_sources(test):
 	td = test.exits.enter_context(files.Path.fs_tmpdir())
 	p = module.V1({})
+	typcache = p.source_format_resolution()
+	unknown = module.unknown_factor_type
 
 	vf = (td/'valid.c').fs_init()
 	sub = (td@"path/to/inner.c").fs_init()
 
-	ls = list(p.collect_sources(td))
-	test/(vf in ls) == True
-	test/(sub in ls) == True
+	ls = list(p.collect_explicit_sources(typcache, td))
+	test/((unknown, vf) in ls) == True
+	test/((unknown, sub) in ls) == True
 
-def test_V1_iterfactors_whole(test):
+def test_V1_iterfactors_explicit_known(test):
 	td = test.exits.enter_context(files.Path.fs_tmpdir())
 	p = module.V1({'source-extension-map': extmap})
 
@@ -63,14 +79,14 @@ def test_V1_iterfactors_whole(test):
 	test/len(idx) == 3
 	sources = list(itertools.chain(*[x[-1] for x in idx.values()]))
 
-	vf in test/sources
-	pt in test/sources
+	(module.unknown_factor_type, vf) in test/sources
+	(text_factor_typref, pt) in test/sources
 
 	py_seg = types.FactorPath.from_sequence(['test'])
 	py_struct = idx[(py_seg, 'python-module')]
-	test/py_struct == (set(), [py])
+	test/py_struct == (set(), [(python_factor_typref, py)])
 
-def test_V1_iterfactors_composite(test):
+def test_V1_iterfactors_explicit_unknown(test):
 	td = test.exits.enter_context(files.Path.fs_tmpdir())
 	p = module.V1({'source-extension-map': extmap})
 
@@ -82,7 +98,7 @@ def test_V1_iterfactors_composite(test):
 	cf = types.FactorPath.from_sequence(['cf'])
 	fls = list(fs[(cf, 'executable')][-1])
 	test/len(fls) == 1
-	v in test/fls
+	(module.unknown_factor_type, v) in test/fls
 
 def test_V1_information(test):
 	"""
