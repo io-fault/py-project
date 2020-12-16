@@ -71,23 +71,23 @@ def structure(collected):
 	req = collections.defaultdict(set)
 
 	for rq in list(local):
-		if rq[0] not in pjs:
+		if rq.project not in pjs:
 			external[rq] = local.pop(rq)
 		else:
 			deps = local[rq]
-			deps.discard(rq[0])
+			deps.discard(rq.project)
 
-			if not deps or not rq[1]:
+			if not deps:
 				# self pointer
 				del local[rq]
 				continue
 			else:
 				graphed.update(deps)
-				graphed.add(rq[0])
+				graphed.add(rq.project)
 
 			for x in deps:
-				req[x].add(rq[0])
-				irq[rq[0]].add(x)
+				req[x].add(rq.project)
+				irq[rq.project].add(x)
 
 	return external, graphed, (req, irq)
 
