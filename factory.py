@@ -236,9 +236,7 @@ def plan(info, infra, factors, dimensions:typing.Sequence[str]=()):
 		kt_body = "\n".join((infrastructure_text(infra)))
 		yield (seg/'infrastructure.txt', _poly_infrastructure_header + kt_body + "\n")
 
-	for path, c in factors:
-		fpath = types.factor@path
-
+	for fpath, c in factors:
 		if isinstance(c.sources, Cell):
 			# sole; indirectly typed factor.
 			(ext, data), = c.sources # Only one source in cells.

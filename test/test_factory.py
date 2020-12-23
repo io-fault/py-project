@@ -121,7 +121,7 @@ def test_plan_cell_factors(test):
 	# when given a Cell as the source list.
 	"""
 
-	s = [('sfact', module.Composition.indirect('txt', 'chapter-text-content'))]
+	s = [(types.factor@'sfact', module.Composition.indirect('txt', 'chapter-text-content'))]
 	infra, f, = module.plan(None, s_infrastructure, s)
 	test/tuple(f[0]) == ('sfact.txt',)
 	test/f[1] == 'chapter-text-content'
@@ -131,7 +131,7 @@ def test_plan_explicitly_typed_factors(test):
 	# - &module.plan
 	"""
 
-	s = [('typedfact', module.Composition.explicit('executable', [], [('test.c', 'nothing')]))]
+	s = [(types.factor@'typedfact', module.Composition.explicit('executable', [], [('test.c', 'nothing')]))]
 	infra, factordottxt, factorsource = module.plan(None, s_infrastructure, s)
 
 	test/tuple(factordottxt[0]) == ('typedfact', 'factor.txt',)
@@ -149,7 +149,7 @@ def test_plan_explicitly_typed_symbols(test):
 	# Check that symbols are stored and are retrievable.
 	"""
 
-	s = [('typedfact',
+	s = [(types.factor@'typedfact',
 		module.Composition.explicit(
 			'executable',
 			['requirement-id'],
