@@ -47,7 +47,7 @@ def factor_images(project:Selector, factor:Segment, directory='__f-int__'):
 	# A segment path is used to identify the factor in order to emphasize that
 	# a direct file path should not be used.
 	"""
-	path = project//factor
+	path = project // factor
 	return (path * directory).delimit()
 
 def compose_image_path(groups, default, variants:typing.Mapping, name, suffix):
@@ -285,8 +285,8 @@ class V1(types.Protocol):
 
 			assert r.identifier not in ignore # cache or integration directory
 
-			srcdir = r//SourceSignal
-			spec = r//FactorDefinitionSignal
+			srcdir = r // SourceSignal
+			spec = r // FactorDefinitionSignal
 
 			if srcdir.fs_type() == 'directory' and spec.fs_type() == 'data':
 				# Explicit Typed Factor directory.
@@ -299,13 +299,17 @@ class V1(types.Protocol):
 
 				dirs = ()
 				# Filter factor.txt and abstract.txt from possible factors.
-				files = [x for x in r.fs_iterfiles('data') if x.identifier not in {'factor.txt', 'abstract.txt'}]
+				files = [
+					x for x in r.fs_iterfiles('data')
+					if x.identifier not in {'factor.txt', 'abstract.txt'}
+				]
 			else:
 				# Not an Explicitly Typed Factor directory.
 				dirs, files = r.fs_list('data')
 
 			# Recognize Indirectly Typed Factors.
-			for (name, ftype), fstruct in self.indirect_factor_records(typcache, [x for x in files if self.isource(x)]):
+			ifr = self.indirect_factor_records(typcache, [x for x in files if self.isource(x)])
+			for (name, ftype), fstruct in ifr:
 				yield ((segment/name), ftype), fstruct
 
 			# Factor Index.
