@@ -12,6 +12,7 @@
 # Whole Factors whose (term)`domain` is inferred from the file's identified language.
 """
 import collections
+import itertools
 
 from ..route.types import Segment
 
@@ -66,7 +67,7 @@ def query(route, ignore=types.ignored):
 			spec_ctx, data = struct.parse(spec.get_text_content())
 
 			srcdir = srcdir.delimit()
-			sources = srcdir.tree()[1] # Only interested in regular files.
+			sources = itertools.chain.from_iterable(x[1] for x in srcdir.fs_index())
 			cpath = Segment.from_sequence(path)
 			composites[cpath] = (data['domain'], data['type'], data.get('symbols', set()), sources)
 		else:
