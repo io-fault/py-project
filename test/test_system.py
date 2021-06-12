@@ -2,7 +2,7 @@
 # Product directory interface checks.
 """
 from ...system import files
-from .. import root as module
+from .. import system as module
 from ..types import factor, Protocol
 
 t_project_id = 'http://ni.fault.io/test/project'

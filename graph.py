@@ -4,10 +4,11 @@
 # Provides &Queue for managing the processing of projects in dependency order.
 # Usage:
 
-#!/pl/python
+#!syntax/python
 	from fault.system import files, query
-	from fault.projects import root, graph
-	ctx = root.Context()
+	from fault.projects import system as lsf
+	from fault.projects import graph
+	ctx = lsf.Context()
 	# Configure paths making up the project context.
 	ctx.connect(query.pwd())
 	ctx.load()
@@ -40,7 +41,7 @@ import itertools
 
 def collect(context):
 	"""
-	# Collect the projects and requirements from the &root.Context instance.
+	# Collect the projects and requirements from the &.system.Context instance.
 	"""
 	pj_seq = list()
 	local = collections.defaultdict(set)
@@ -125,7 +126,7 @@ class Queue(object):
 		self._pending = set()
 		self._storage = collections.deque()
 
-	def extend(self, context:'.root.Context') -> typing.List[str]:
+	def extend(self, context:'.system.Context') -> typing.List[str]:
 		"""
 		# Extend the queue using the projects contained within &context.
 
@@ -212,9 +213,9 @@ if __name__ == '__main__':
 	# Print dependency order of the projects within the product paths supplied as argv.
 	import sys
 	from ..system import files
-	from . import root
+	from . import system as lsf
 
-	ctx = root.Context()
+	ctx = lsf.Context()
 	for x in map(files.Path.from_path, sys.argv[1:]):
 		ctx.connect(x)
 	ctx.load()
