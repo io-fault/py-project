@@ -10,16 +10,23 @@ from .. import polynomial as module
 
 python_factor_typref = types.Reference(
 	'http://if.fault.io/factors',
-	types.factor@'python-module',
+	types.factor@'python.module',
 	'type',
-	'v3',
+	'python.psf-v3',
 )
 
 text_factor_typref = types.Reference(
 	'http://if.fault.io/factors',
-	types.factor@'chapter',
+	types.factor@'text.chapter',
 	'type',
 	'kleptic',
+)
+
+exe_typref = types.Reference(
+	'http://if.fault.io/factors',
+	types.factor@'system.executable',
+	'type',
+	None,
 )
 
 extmap = {
@@ -83,20 +90,20 @@ def test_V1_iterfactors_explicit_known(test):
 	(text_factor_typref, pt) in test/sources
 
 	py_seg = types.FactorPath.from_sequence(['test'])
-	py_struct = idx[(py_seg, 'python-module')]
+	py_struct = idx[(py_seg, python_factor_typref.isolate(None))]
 	test/py_struct == (set(), [(python_factor_typref, py)])
 
 def test_V1_iterfactors_explicit_unknown(test):
 	td = test.exits.enter_context(files.Path.fs_tmpdir())
 	p = module.V1({'source-extension-map': extmap})
 
-	ft = (td/'cf'/'factor.txt').fs_init(mkfactor('executable', set()).encode('utf-8'))
+	ft = (td/'cf'/'factor.txt').fs_init(mkfactor(str(exe_typref), set()).encode('utf-8'))
 
 	v = (td/'cf'/'src'/'valid.c').fs_init()
 	fs = dict(p.iterfactors(td, types.factor))
 
 	cf = types.FactorPath.from_sequence(['cf'])
-	fls = list(fs[(cf, 'executable')][-1])
+	fls = list(fs[(cf, exe_typref)][-1])
 	test/len(fls) == 1
 	(module.unknown_factor_type, v) in test/fls
 

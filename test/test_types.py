@@ -24,6 +24,16 @@ def test_FactorPath_strings(test):
 	test/str(s) == 'fault.project.path'
 	test/repr(s) == "(factor@%r)" %('fault.project.path',)
 
+def test_Reference_isolate(test):
+	"""
+	# - &module.Reference.isolate
+	"""
+	r = module.Reference('://project', module.factor@'root', 'i-test', None)
+	test/r.isolation == None
+	test/r.isolate('replacement').isolation == 'replacement'
+	test/r.isolate(None).isolation == None
+	test/id(r.isolate(None)) == id(r)
+
 def test_Reference_constructors(test):
 	"""
 	# - &module.Reference
@@ -35,11 +45,17 @@ def test_Reference_constructors(test):
 	test/r.method == None
 	test/r.isolation == None
 
+	ri = module.Reference.from_ri(None, 'project/factor.path')
+	test/r == ri
+
 	r = module.Reference('project', module.factor@'factor.path', 'method-id', 'iso')
 	test/r.project == 'project'
 	test/str(r.factor) == 'factor.path'
 	test/r.method == 'method-id'
 	test/r.isolation == 'iso'
+
+	ri = module.Reference.from_ri('method-id', 'project/factor.path#iso')
+	test/r == ri
 
 if __name__ == '__main__':
 	import sys

@@ -160,6 +160,46 @@ class Reference(object):
 	method: (str) = None
 	isolation: (str) = None
 
+	def isolate(self, isolation:str):
+		"""
+		# Reconstruct the reference replacing its isolation field the given &isolation.
+
+		# If &isolation is already set, return &self.
+		"""
+		if isolation == self.isolation:
+			return self
+		return self.__class__(self.project, self.factor, self.method, isolation)
+
+	def __str__(self):
+		absolute = '/'.join((self.project, str(self.factor)))
+
+		if self.isolation:
+			return '#'.join((absolute, self.isolation))
+		else:
+			return absolute
+
+	@classmethod
+	def from_ri(Class, method:str, ri:str):
+		"""
+		# Create a reference from a resource indicator.
+		# Splits on the fragment and the final path segment.
+		"""
+		fragment_offset = ri.rfind('#')
+		if fragment_offset == -1:
+			isolation = None
+			fragment_offset = len(ri)
+		else:
+			isolation = ri[fragment_offset+1:]
+
+		project_sep = ri.rfind('/', 0, fragment_offset)
+		if project_sep == -1:
+			factorpath = factor # Empty factor path.
+			project_sep = fragment_offset
+		else:
+			factorpath = factor@ri[project_sep+1:fragment_offset]
+
+		return Class(ri[:project_sep], factorpath, method, isolation)
+
 ISymbols = typing.Mapping[(str, typing.Collection[Reference])]
 
 FactorType = typing.Tuple[

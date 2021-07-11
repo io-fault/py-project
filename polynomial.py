@@ -16,11 +16,11 @@ from . import struct
 # Directory Structure of Integrals
 default_image_segment = [['system', 'architecture'], ['intention']]
 unknown_factor_type = types.Reference(
-	'http://if.fault.io/factors', types.factor@'unknown',
+	'http://if.fault.io/factors', types.factor@'image.unknown',
 	'type', None
 )
 image_factor_type = types.Reference(
-	'http://if.fault.io/factors', types.factor@'image',
+	'http://if.fault.io/factors', types.factor@'image.reflection',
 	'type', None
 )
 
@@ -141,11 +141,7 @@ class V1(types.Protocol):
 				iso = None
 
 				if typ == 'absolute':
-					project, factor = refdata.rsplit('/', 1)
-					if '#' in factor:
-						factor, iso = factor.rsplit('#', 1)
-
-					sym[k].append(Reference(project, types.factor@factor, method, iso))
+					sym[k].append(Reference.from_ri(method, refdata))
 				elif typ == 'relative':
 					project, factor = absolute(refdata)
 					sym[k].append(Reference(project, factor, None, None))
@@ -247,7 +243,7 @@ class V1(types.Protocol):
 
 			name, suffix = src.identifier.split('.')
 			ref, symbols = typcache(suffix)
-			yield (name, str(ref.factor)), (symbols, Cell((ref, src)))
+			yield (name, ref.isolate(None)), (symbols, Cell((ref, src)))
 
 	def collect_explicit_sources(self, typcache, route:files.Path):
 		"""
@@ -270,7 +266,7 @@ class V1(types.Protocol):
 			*, ignore=types.ignored
 		) -> typing.Iterable[types.FactorType]:
 		"""
-		# Query the project &route for factor compositions contained within &rpath.
+		# Query the project &route for factor specifications contained within &rpath.
 		"""
 
 		froute = route // rpath
@@ -295,7 +291,8 @@ class V1(types.Protocol):
 				sources = self.collect_explicit_sources(typcache, srcdir)
 				cpath = types.FactorPath.from_sequence(path)
 
-				yield (cpath, data['type']), (data.get('symbols', set()), sources)
+				typref = types.Reference.from_ri('type', data['type'])
+				yield (cpath, typref), (data.get('symbols', set()), sources)
 
 				dirs = ()
 				# Filter factor.txt and abstract.txt from possible factors.
