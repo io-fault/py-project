@@ -13,6 +13,7 @@
 import typing
 from dataclasses import dataclass
 
+from ..context import tools
 from ..route.types import Segment
 from ..system.files import Path
 
@@ -27,6 +28,28 @@ ignored = {
 	'.darcs',
 	'.pijul',
 }
+
+@dataclass(eq=True, frozen=True)
+class Format(object):
+	"""
+	# Source format structure holding the language and dialect.
+	"""
+	language:(str)
+	dialect:(typing.Optional[str]) = None
+
+	@classmethod
+	def from_string(Class, string, /, separator='.'):
+		"""
+		# Split the format identifier by the first (char)`.` in &string.
+		# Creates an instance using the first field as the &language and second
+		# as the &dialect. If there is no (char)`.` or the dialect is an empty string,
+		# the dialect will be &None,
+		"""
+		idx = string.find(separator)
+		if idx == -1:
+			return Class(string, None)
+
+		return Class(string[:idx].strip(), string[idx+1:].strip() or None)
 
 class FactorPath(Segment):
 	"""
@@ -153,6 +176,9 @@ class Reference(object):
 
 		# When referring to normal requirements, this is always the factor type that should
 		# be used when integration is performed.
+	# /format/
+		# In the case of `type` references, &format provides access to a structured
+		# form of &isolation: a &Format instance.
 	"""
 
 	project: (str)
@@ -177,6 +203,17 @@ class Reference(object):
 			return '#'.join((absolute, self.isolation))
 		else:
 			return absolute
+
+	@property
+	def format(self, /, _fmtcache=tools.cachedcalls(8)(Format.from_string)):
+		"""
+		# Construct the &Format instance representing the &isolation.
+
+		# Format instances are cached and repeat reads across references
+		# with the same isolation should normally return the same object.
+		"""
+		assert self.method == 'type'
+		return _fmtcache(self.isolation)
 
 	@classmethod
 	def from_ri(Class, method:str, ri:str):

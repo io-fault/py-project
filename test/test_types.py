@@ -3,6 +3,24 @@
 """
 from .. import types as module
 
+def test_Format(test):
+	"""
+	# - &module.Format
+	"""
+	test/module.Format('a', 'b') == module.Format.from_string('a.b')
+	test/module.Format('b', 'b') == module.Format.from_string('b.b')
+
+	test/module.Format('c', None) == module.Format.from_string('c')
+	test/module.Format('c', None) == module.Format.from_string('c.')
+	test/module.Format('c') == module.Format.from_string('c')
+
+def test_Reference_format(test):
+	"""
+	# - &module.Reference.format
+	"""
+	r = module.Reference('://project', module.factor@'root', 'type', 'c.kr')
+	test/module.Format('c', 'kr') == r.format
+
 def test_FactorPath_constructors(test):
 	"""
 	# - &module.FactorPath.__matmul__
