@@ -197,7 +197,6 @@ class V1(types.Protocol):
 		idir = factor_images(route, fp)
 		seg = compose_image_path(groups, default, variants, fp.identifier, suffix)
 		return (idir + seg)
-	integral = image
 
 	def isource(self, route:files.Path):
 		"""

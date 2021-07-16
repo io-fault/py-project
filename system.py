@@ -466,7 +466,6 @@ class Project(object):
 
 	def image(self, variants, fp:types.FactorPath, suffix='i'):
 		return self.protocol.image(self.route, variants, fp, suffix=suffix)
-	integral = image
 
 	def itercontexts(self) -> typing.Iterable[types.FactorPath]:
 		"""
