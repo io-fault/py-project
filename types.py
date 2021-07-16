@@ -28,6 +28,39 @@ ignored = {
 }
 
 @dataclass(eq=True, frozen=True)
+class Variants(object):
+	"""
+	# Factor image variant specification.
+
+	# [ Properties ]
+	# /system/
+		# Identifier of the runtime environment; normally, an operating system name.
+		# Often, derived from (system/command)`uname`.
+	# /architecture/
+		# Identifier for the instruction set or format.
+		# Often, derived from (system/command)`uname`.
+	# /intention/
+		# Identifier for the intended use of the image. Normally, (id)`optimal`.
+	# /form/
+		# Identifier for the specialization of the image. Normally an empty string.
+		# Used in exceptional cases to allow parallel storage with the general form.
+	"""
+
+	system:(str)
+	architecture:(str)
+	intention:(str) = 'optimal'
+	form:(str) = ''
+
+	def __str__(self):
+		if self.form:
+			return "%s-%s/%s[%s]" %(self.system, self.architecture, self.intention, self.form)
+		else:
+			return "%s-%s/%s" %(self.system, self.architecture, self.intention)
+
+	def get(self, key:str) -> str:
+		return getattr(self, key)
+
+@dataclass(eq=True, frozen=True)
 class Format(object):
 	"""
 	# Source format structure holding the language and dialect.

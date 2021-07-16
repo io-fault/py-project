@@ -50,7 +50,7 @@ def factor_images(project:Selector, factor:Segment, directory='__f-int__'):
 	path = project // factor
 	return (path * directory).delimit()
 
-def compose_image_path(groups, default, variants:typing.Mapping, name, suffix):
+def compose_image_path(groups, default, variants, name, suffix):
 	"""
 	# Create a variant path (list of strings) according to the given &groups and &variants.
 	"""
@@ -60,6 +60,9 @@ def compose_image_path(groups, default, variants:typing.Mapping, name, suffix):
 		fields = ([(variants.get(x) or default) for x in g])
 		segment = '-'.join(fields)
 		segments.append(segment)
+
+	if variants.get('form'):
+		segments.append(variants.get('form'))
 
 	# Final identifier.
 	fields = [name]

@@ -3,6 +3,28 @@
 """
 from .. import types as module
 
+def test_Variants(test):
+	"""
+	# - &module.Variant
+	"""
+	v = module.Variants('s', 'a', 'i', 'f')
+	test/'i' == v.intention
+	test/'s' == v.system
+	test/'a' == v.architecture
+	test/'f' == v.form
+
+	v = module.Variants('s', 'a', 'i')
+	test/'i' == v.intention
+	test/'s' == v.system
+	test/'a' == v.architecture
+	test/'' == v.form
+
+	v = module.Variants('s', 'a')
+	test/'optimal' == v.intention
+	test/'s' == v.system
+	test/'a' == v.architecture
+	test/'' == v.form
+
 def test_Format(test):
 	"""
 	# - &module.Format
