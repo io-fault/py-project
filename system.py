@@ -693,6 +693,10 @@ class Context(object):
 
 		return (pd, pj, fp)
 
+	def image(self, variants, fp, suffix='i'):
+		pd, pj, lfp = self.split(fp)
+		return pj.image(variants, lfp, suffix=suffix)
+
 if __name__ == '__main__':
 	import sys
 	from ..system import files
