@@ -434,6 +434,28 @@ class Project(object):
 		self.route = self.product.route//pf
 
 	@tools.cachedproperty
+	def _iid_corpus_name_pair(self):
+		p = self.identifier.rstrip('/').rsplit('/', 1)
+		if len(p) < 2:
+			# If there is no '/', presume it's just a name.
+			p.insert(0, '')
+		return tuple(p)
+
+	@property
+	def corpus(self) -> str:
+		"""
+		# The leading portion of the independent identifier.
+		"""
+		return self._iid_corpus_name_pair[0]
+
+	@property
+	def name(self) -> str:
+		"""
+		# The name of the project as defined by the independent identifier.
+		"""
+		return self._iid_corpus_name_pair[1]
+
+	@tools.cachedproperty
 	def information(self) -> types.Information:
 		"""
 		# The identifying information of the project.

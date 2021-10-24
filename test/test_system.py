@@ -179,6 +179,30 @@ def test_Product_select(test):
 	test/proto2 == proto
 	test/id == t_project_id + '/alt-1'
 
+def test_Project_no_corpus_part(test):
+	"""
+	# - &module.Project._iid_corpus_name_pair
+	# - &module.Project.corpus
+	# - &module.Project.name
+	"""
+	pj = module.Project.__new__(module.Project)
+	pj.identifier = 'no-slash-name'
+
+	test/pj.corpus == ''
+	test/pj.name == 'no-slash-name'
+
+def test_Project_corpus_name(test):
+	"""
+	# - &module.Project._iid_corpus_name_pair
+	# - &module.Project.corpus
+	# - &module.Project.name
+	"""
+	pj = module.Project.__new__(module.Project)
+	pj.identifier = 'corpus/path/slash-name'
+
+	test/pj.corpus == 'corpus/path'
+	test/pj.name == 'slash-name'
+
 def test_Project_select_none(test):
 	"""
 	# - &module.Project.select
