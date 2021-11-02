@@ -327,7 +327,7 @@ if __name__ == '__main__':
 	import sys
 	proto = V1({})
 	for x in sys.argv[1:]:
-		path = files.root.fs_select(x)
+		path = files.root@x
 		info = load_project_information(path/'project.txt')
 
 		with (path/'.protocol').fs_open('tw') as f:

@@ -723,7 +723,7 @@ if __name__ == '__main__':
 	import sys
 	from ..system import files
 	path, *roots = sys.argv[1:]
-	pd = Product(files.root.fs_select(path))
+	pd = Product(files.root@path)
 	if roots:
 		pd.roots = set(types.factor@x for x in roots)
 	pd.update()
