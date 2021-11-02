@@ -5,12 +5,12 @@
 # Usage:
 
 #!syntax/python
-	from fault.system import files, query
+	from fault.system import files
 	from fault.projects import system as lsf
 	from fault.projects import graph
 	ctx = lsf.Context()
 	# Configure paths making up the project context.
-	ctx.connect(query.pwd())
+	ctx.connect(files.root@"/product/path")
 	ctx.load()
 	q = Queue()
 	ext = q.extend(ctx)
